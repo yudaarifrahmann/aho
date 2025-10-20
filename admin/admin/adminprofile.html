@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Admin - Dashboard AHO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #4B5563 #1F2937;
+        }
+        *::-webkit-scrollbar {
+            width: 6px;
+        }
+        *::-webkit-scrollbar-track {
+            background: #1F2937;
+        }
+        *::-webkit-scrollbar-thumb {
+            background: #4B5563;
+            border-radius: 3px;
+        }
+        .sidebar-item:hover {
+            background: linear-gradient(90deg, #3B82F6 0%, #1D4ED8 100%);
+            transform: translateX(4px);
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        /* Mobile Sidebar Styles */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                z-index: 50;
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .mobile-menu-btn {
+                display: block;
+            }
+            .header-title {
+                font-size: 1.25rem;
+            }
+            .header-subtitle {
+                font-size: 0.75rem;
+            }
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Overlay for mobile sidebar */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+        }
+        .sidebar-overlay.active {
+            display: block;
+        }
+        
+        /* Profile Picture Upload */
+        .profile-picture-upload {
+            position: relative;
+            display: inline-block;
+        }
+        .profile-picture-upload input {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        /* Admin Only Badge */
+        .admin-only-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #F59E0B;
+            color: white;
+            border-radius: 9999px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen">
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn fixed top-4 left-4 z-30 bg-gray-800 p-2 rounded-lg md:hidden" id="mobileMenuButton">
+        <i class="fas fa-bars text-white"></i>
+    </button>
+    
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <!-- Sidebar -->
+    <div class="sidebar fixed left-0 top-0 h-full w-64 bg-gray-800 border-r border-gray-700 z-40" id="sidebar">
+        <div class="p-6 border-b border-gray-700">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-blue-600 rounded-full overflow-hidden flex items-center justify-center">
+                    <img src="https://absen.ahoservice.my.id/assets/img/iconapp.png" alt="AHO Logo" class="w-full h-full object-cover">
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-white">AHO Admin</h1>
+                    <p class="text-sm text-gray-400">Profile</p>
+                </div>
+            </div>
+        </div>
+        
+        <nav class="mt-6">
+            <a href="index.html" class="sidebar-item flex items-center px-6 py-3 text-gray-300 hover:text-white transition-all duration-300">
+                <i class="fas fa-tachometer-alt w-5 mr-3"></i> Dashboard
+            </a>
+            <div class="relative">
+                <div class="sidebar-item flex items-center px-6 py-3 text-gray-300 hover:text-white transition-all duration-300">
+                    <i class="fas fa-clipboard-check w-5 mr-3"></i> Kelola Absensi
+                    <i class="fas fa-chevron-down ml-auto text-xs"></i>
+                </div>
+                <div class="bg-gray-700 ml-6">
+                    <a href="attendance-in.html" class="block px-6 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-600 transition-colors duration-200">
+                        <i class="fas fa-check-circle mr-2"></i> Catatan Absensi Masuk
+                    </a>
+                    <a href="attendance-out.html" class="block px-6 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-600 transition-colors duration-200">
+                        <i class="fas fa-times-circle mr-2"></i> Catatan Absensi Tidak Masuk
+                    </a>
+                </div>
+            </div>
+            <a href="users.html" class="sidebar-item flex items-center px-6 py-3 text-gray-300 hover:text-white transition-all duration-300">
+                <i class="fas fa-users w-5 mr-3"></i> Data Pengguna
+            </a>
+            <a href="settings.html" class="sidebar-item flex items-center px-6 py-3 text-gray-300 hover:text-white transition-all duration-300">
+                <i class="fas fa-cog w-5 mr-3"></i> Setting
+            </a>
+        </nav>
+
+        <div class="absolute bottom-6 left-6 right-6">
+                <button onclick="logout()" class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-xl transition duration-300">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                </button>
+            </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content ml-0 md:ml-64 min-h-screen bg-gray-900" id="mainContent">
+        <!-- Header -->
+        <header class="bg-gray-800 border-b border-gray-700 px-4 md:px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="ml-10 md:ml-0">
+                    <h2 class="header-title text-xl md:text-2xl font-bold text-white">Profile Admin</h2>
+                    <p class="header-subtitle text-xs md:text-sm text-gray-400 mt-1">Kelola informasi akun Anda</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                        <div class="text-right hidden sm:block">
+                            <p class="text-sm text-gray-400">Admin</p>
+                            <p class="font-medium text-white" id="adminName">Memuat...</p>
+                        </div>
+                        <div class="w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden block">
+                            <img id="adminPhoto" src="../img/iconapp.png" alt="Foto Profil Admin"
+                                class="w-full h-full object-cover">
+                    </div>
+                    </div>
+            </div>
+        </header>
+        
+        <!-- Profile Content -->
+        <div class="p-4 md:p-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 profile-grid">
+                <!-- Profile Picture Section -->
+                <div class="bg-gray-800 rounded-xl md:rounded-2xl border border-gray-700 p-4 md:p-6">
+                    <h3 class="text-lg md:text-xl font-bold text-white mb-4">Foto Profil</h3>
+                    <div class="flex flex-col items-center">
+                        <div class="relative mb-4">
+                            <div class="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-blue-500">
+                                <img id="adminPhoto" src="../img/iconapp.png" alt="Foto Profil Admin"
+                                class="w-full h-full object-cover">
+                            </div>
+                            <div class="absolute bottom-0 right-0 bg-blue-600 rounded-full p-2">
+                                <div class="profile-picture-upload">
+                                    <i class="fas fa-camera text-white"></i>
+                                    <input type="file" id="profileUpload" accept="image/*" class="hidden">
+                                </div>
+                            </div>
+                        </div>
+                        <button id="uploadBtn" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg md:rounded-xl text-sm md:text-base">
+                            <i class="fas fa-upload mr-2"></i> Unggah Foto
+                        </button>
+                        <p class="text-gray-400 text-xs md:text-sm mt-2">Format: JPG, PNG (max. 2MB)</p>
+                    </div>
+                </div>
+                
+                <!-- Account Information -->
+                <div class="bg-gray-800 rounded-xl md:rounded-2xl border border-gray-700 p-4 md:p-6 lg:col-span-2">
+                    <h3 class="text-lg md:text-xl font-bold text-white mb-4">Informasi Akun</h3>
+                    <form id="profileForm">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-gray-300 mb-2 text-sm md:text-base">Nama Lengkap</label>
+                                <input type="text" value="Yuda Arif Rahman" class="w-full px-3 py-2 md:px-4 md:py-2 bg-gray-700 border border-gray-600 rounded-lg md:rounded-xl text-white text-sm md:text-base" required>
+                            </div>
+                            <div>
+                                <label class="block text-gray-300 mb-2 text-sm md:text-base">Email</label>
+                                <input type="email" value="yuda@ahoservice.my.id" class="w-full px-3 py-2 md:px-4 md:py-2 bg-gray-700 border border-gray-600 rounded-lg md:rounded-xl text-white text-sm md:text-base" required>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-gray-300 mb-2 text-sm md:text-base">Username</label>
+                                <input type="text" value="yuda_admin" class="w-full px-3 py-2 md:px-4 md:py-2 bg-gray-700 border border-gray-600 rounded-lg md:rounded-xl text-white text-sm md:text-base" required>
+                            </div>
+                            </div>
+                        <div class="flex justify-end">
+                            <button type="submit" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg md:rounded-xl text-sm md:text-base">
+                                <i class="fas fa-save mr-2"></i> Simpan Perubahan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Security Settings -->
+                <div class="bg-gray-800 rounded-xl md:rounded-2xl border border-gray-700 p-4 md:p-6 lg:col-span-3">
+                    <h3 class="text-lg md:text-xl font-bold text-white mb-4">Keamanan Akun</h3>
+                    <div class="space-y-4">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between p-4 bg-gray-700/50 rounded-lg md:rounded-xl">
+                            <div class="mb-2 md:mb-0">
+                                <h4 class="font-medium text-white">Password</h4>
+                                <p class="text-gray-400 text-sm">Terakhir diubah 3 bulan lalu</p>
+                            </div>
+                            <button id="changePasswordBtn" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg md:rounded-xl text-sm md:text-base">
+                                <i class="fas fa-key mr-2"></i> Ubah Password
+                            </button>
+                        </div>
+                        
+                        <div class="flex flex-col md:flex-row md:items-center justify-between p-4 bg-gray-700/50 rounded-lg md:rounded-xl">
+                            <div class="mb-2 md:mb-0">
+                                <h4 class="font-medium text-white">Verifikasi 2 Langkah</h4>
+                                <p class="text-gray-400 text-sm">Tambahkan lapisan keamanan ekstra</p>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-red-500 text-sm">Tidak aktif</span>
+                                <button class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg md:rounded-xl text-sm md:text-base">
+                                    <i class="fas fa-shield-alt mr-2"></i> Aktifkan
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-col md:flex-row md:items-center justify-between p-4 bg-gray-700/50 rounded-lg md:rounded-xl">
+                            <div class="mb-2 md:mb-0">
+                                <h4 class="font-medium text-white">Sesi Aktif</h4>
+                                <p class="text-gray-400 text-sm">2 perangkat terhubung</p>
+                            </div>
+                            <button class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg md:rounded-xl text-sm md:text-base">
+                                <i class="fas fa-laptop mr-2"></i> Kelola Sesi
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Admin Tools (Hanya untuk Super Admin) -->
+                <div class="bg-gray-800 rounded-xl md:rounded-2xl border border-gray-700 p-4 md:p-6 lg:col-span-3">
+                    <h3 class="text-lg md:text-xl font-bold text-white mb-4">Admin Tools</h3>
+                    <div class="space-y-4">
+                        <div class="p-4 bg-gray-700/50 rounded-lg md:rounded-xl">
+                            <h4 class="font-medium text-white mb-3">Buat Admin Baru</h4>
+                            <form id="newAdminForm">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <label class="block text-gray-300 mb-2 text-sm md:text-base">Nama Lengkap</label>
+                                        <input type="text" class="w-full px-3 py-2 md:px-4 md:py-2 bg-gray-700 border border-gray-600 rounded-lg md:rounded-xl text-white text-sm md:text-base" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-300 mb-2 text-sm md:text-base">Email</label>
+                                        <input type="email" class="w-full px-3 py-2 md:px-4 md:py-2 bg-gray-700 border border-gray-600 rounded-lg md:rounded-xl text-white text-sm md:text-base" required>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <label class="block text-gray-300 mb-2 text-sm md:text-base">Username</label>
+                                        <input type="text" class="w-full px-3 py-2 md:px-4 md:py-2 bg-gray-700 border border-gray-600 rounded-lg md:rounded-xl text-white text-sm md:text-base" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-300 mb-2 text-sm md:text-base">Role</label>
+                                        <select class="w-full px-3 py-2 md:px-4 md:py-2 bg-gray-700 border border-gray-600 rounded-lg md:rounded-xl text-white text-sm md:text-base">
+                                            <option>Admin</option>
+                                            <option>Super Admin</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="block text-gray-300 mb-2 text-sm md:text-base">Password Sementara</label>
+                                    <input type="password" class="w-full px-3 py-2 md:px-4 md:py-2 bg-gray-700 border border-gray-600 rounded-lg md:rounded-xl text-white text-sm md:text-base" required>
+                                    <p class="text-gray-400 text-xs mt-1">Admin baru harus mengganti password saat login pertama</p>
+                                </div>
+                                <div class="flex justify-end">
+                                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg md:rounded-xl text-sm md:text-base">
+                                        <i class="fas fa-user-plus mr-2"></i> Buat Admin
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <div class="p-4 bg-gray-700/50 rounded-lg md:rounded-xl">
+                            <h4 class="font-medium text-white mb-3">Daftar Admin</h4>
+                            <div class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead class="bg-gray-700 text-gray-300">
+                                        <tr>
+                                            <th class="py-2 px-3 text-left text-sm">Nama</th>
+                                            <th class="py-2 px-3 text-left text-sm">Username</th>
+                                            <th class="py-2 px-3 text-left text-sm">Role</th>
+                                            <th class="py-2 px-3 text-left text-sm">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-600">
+                                        <tr>
+                                            <td class="py-2 px-3">Yuda Arif Rahman</td>
+                                            <td class="py-2 px-3">yuda_admin</td>
+                                            <td class="py-2 px-3">
+                                                <span class="bg-yellow-500 text-white px-2 py-1 rounded-full text-xs">Super Admin</span>
+                                            </td>
+                                            <td class="py-2 px-3">
+                                                <button class="text-blue-400 hover:text-blue-300 mr-2">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="text-red-400 hover:text-red-300">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-2 px-3">Admin Kedua</td>
+                                            <td class="py-2 px-3">admin2</td>
+                                            <td class="py-2 px-3">
+                                                <span class="bg-blue-500 text-white px-2 py-1 rounded-full text-xs">Admin</span>
+                                            </td>
+                                            <td class="py-2 px-3">
+                                                <button class="text-blue-400 hover:text-blue-300 mr-2">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="text-red-400 hover:text-red-300">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div id="passwordModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 px-4">
+        <div class="bg-gray-800 rounded-xl md:rounded-2xl p-4 md:p-6 w-full max-w-md">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg md:text-xl font-bold text-white">Ubah Password</h3>
+                <button id="closePasswordModal" class="text-gray-400 hover:text-white">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="passwordForm">
+                <div class="mb-4">
+                    <label class="block text-gray-300 mb-2 text-sm md:text-base">Password Saat Ini</label>
+                    <input type="password" class="w-full px-3 py-2 md:px-4 md:py-2 bg-gray-700 border border-gray-600 rounded-lg md:rounded-xl text-white text-sm md:text-base" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-300 mb-2 text-sm md:text-base">Password Baru</label>
+                    <input type="password" class="w-full px-3 py-2 md:px-4 md:py-2 bg-gray-700 border border-gray-600 rounded-lg md:rounded-xl text-white text-sm md:text-base" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-300 mb-2 text-sm md:text-base">Konfirmasi Password Baru</label>
+                    <input type="password" class="w-full px-3 py-2 md:px-4 md:py-2 bg-gray-700 border border-gray-600 rounded-lg md:rounded-xl text-white text-sm md:text-base" required>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancelPasswordChange" class="px-3 py-2 md:px-4 md:py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg md:rounded-xl text-sm md:text-base">Batal</button>
+                    <button type="submit" class="px-3 py-2 md:px-4 md:py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg md:rounded-xl text-sm md:text-base">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Konfigurasi API
+        const API_BASE_URL = 'https://absen.ahoservice.my.id';
+        const API_HEADERS = {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem('admin_token')
+        };
+
+        if (!localStorage.getItem('admin_token')) {
+            window.location.href = 'login.html';
+        }
+        
+        // Fungsi untuk memuat data profil admin
+        async function loadAdminProfile() {
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const response = await fetch(`${API_BASE_URL}/api/admin/profile`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+
+                if (response.status === 401) {
+                    localStorage.removeItem('admin_token');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error('Gagal memuat profil admin');
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Update nama admin
+                    document.getElementById('adminName').textContent = data.data.full_name;
+
+                    // Update foto profil jika ada
+                    if (data.data.photo_url) {
+                        document.getElementById('adminPhoto').src = data.data.photo_url;
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                // Tetap tampilkan UI meskipun gagal load profil
+                document.getElementById('adminName').textContent = 'Himpunan';
+            }
+        }
+        
+        // Mobile sidebar toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuButton = document.getElementById('mobileMenuButton');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const mainContent = document.getElementById('mainContent');
+
+            mobileMenuButton.addEventListener('click', function() {
+                sidebar.classList.toggle('active');
+                sidebarOverlay.classList.toggle('active');
+            });
+
+            sidebarOverlay.addEventListener('click', function() {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            });
+            
+            //load data
+            loadAdminProfile();
+
+            // Profile picture upload
+            const profileUpload = document.getElementById('profileUpload');
+            const profileImage = document.getElementById('profileImage');
+            const uploadBtn = document.getElementById('uploadBtn');
+
+            profileUpload.addEventListener('change', function(e) {
+                if (e.target.files && e.target.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        profileImage.src = event.target.result;
+                    };
+                    reader.readAsDataURL(e.target.files[0]);
+                }
+            });
+
+            uploadBtn.addEventListener('click', function() {
+                profileUpload.click();
+            });
+
+            // Password modal
+            const passwordModal = document.getElementById('passwordModal');
+            const changePasswordBtn = document.getElementById('changePasswordBtn');
+            const closePasswordModal = document.getElementById('closePasswordModal');
+            const cancelPasswordChange = document.getElementById('cancelPasswordChange');
+
+            changePasswordBtn.addEventListener('click', function() {
+                passwordModal.classList.remove('hidden');
+            });
+
+            closePasswordModal.addEventListener('click', function() {
+                passwordModal.classList.add('hidden');
+            });
+
+            cancelPasswordChange.addEventListener('click', function() {
+                passwordModal.classList.add('hidden');
+            });
+
+            // Form submissions
+            document.getElementById('profileForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                // Simpan perubahan profile
+                alert('Perubahan profile berhasil disimpan!');
+            });
+
+            document.getElementById('passwordForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                // Simpan password baru
+                passwordModal.classList.add('hidden');
+                alert('Password berhasil diubah!');
+            });
+
+            document.getElementById('newAdminForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                // Buat admin baru
+                alert('Admin baru berhasil dibuat!');
+            });
+        });
+
+        // Fungsi logout
+        window.logout = function() {
+            if (confirm('Apakah Anda yakin ingin logout?')) {
+                localStorage.removeItem('admin_token');
+                window.location.href = 'login.html';
+            }
+        };
+    </script>
+</body>
+</html>

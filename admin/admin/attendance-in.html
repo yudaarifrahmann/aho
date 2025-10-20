@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absensi Masuk - Dashboard Admin AHO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #4B5563 #1F2937;
+        }
+        *::-webkit-scrollbar {
+            width: 6px;
+        }
+        *::-webkit-scrollbar-track {
+            background: #1F2937;
+        }
+        *::-webkit-scrollbar-thumb {
+            background: #4B5563;
+            border-radius: 3px;
+        }
+        .sidebar-item:hover {
+            background: linear-gradient(90deg, #3B82F6 0%, #1D4ED8 100%);
+            transform: translateX(4px);
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .status-present {
+            background-color: #10B981;
+            color: white;
+        }
+        .status-late {
+            background-color: #F59E0B;
+            color: white;
+        }
+        .status-permission {
+            background-color: #3B82F6;
+            color: white;
+        }
+        
+        /* Mobile Sidebar Styles */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                z-index: 50;
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .mobile-menu-btn {
+                display: block;
+            }
+            .header-title {
+                font-size: 1.25rem;
+            }
+            .header-subtitle {
+                font-size: 0.75rem;
+            }
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+            .action-buttons {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            .action-buttons button {
+                width: 100%;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Overlay for mobile sidebar */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+        }
+        .sidebar-overlay.active {
+            display: block;
+        }
+        
+        /* Responsive table */
+        @media (max-width: 640px) {
+            .responsive-table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+            .table-row {
+                min-width: 600px;
+            }
+        }
+
+        /* Custom Alert Styles */
+        .custom-alert {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #1F2937 0%, #111827 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            border: 1px solid #374151;
+            z-index: 1000;
+            max-width: 90%;
+            width: 400px;
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .custom-alert.active {
+            display: block;
+        }
+
+        .custom-alert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #374151;
+        }
+
+        .custom-alert-title {
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: #E5E7EB;
+        }
+
+        .custom-alert-close {
+            background: none;
+            border: none;
+            color: #9CA3AF;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .custom-alert-close:hover {
+            color: #E5E7EB;
+        }
+
+        .custom-alert-body {
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+
+        .custom-alert-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+
+        .custom-alert-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .custom-alert-btn-primary {
+            background-color: #3B82F6;
+            color: white;
+            border: none;
+        }
+
+        .custom-alert-btn-primary:hover {
+            background-color: #2563EB;
+        }
+
+        .custom-alert-btn-secondary {
+            background-color: #374151;
+            color: white;
+            border: none;
+        }
+
+        .custom-alert-btn-secondary:hover {
+            background-color: #4B5563;
+        }
+
+        .alert-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .alert-overlay.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -55%);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen">
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn fixed top-4 left-4 z-30 bg-gray-800 p-2 rounded-lg md:hidden" id="mobileMenuButton">
+        <i class="fas fa-bars text-white"></i>
+    </button>
+    
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <!-- Sidebar -->
+    <div class="sidebar fixed left-0 top-0 h-full w-64 bg-gray-800 border-r border-gray-700 z-40" id="sidebar">
+        <div class="p-6 border-b border-gray-700">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-blue-600 rounded-full overflow-hidden flex items-center justify-center">
+                        <img src="https://absen.ahoservice.my.id/assets/img/iconapp.png" alt="AHO Logo" class="w-full h-full object-cover">
+                    </div>
+                <div>
+                    <h1 class="text-xl font-bold text-white">AHO Admin</h1>
+                    <p class="text-sm text-gray-400">Absensi Masuk</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="mt-6">
+            <a href="index.html" class="sidebar-item flex items-center px-6 py-3 text-gray-300 hover:text-white transition-all duration-300">
+                <i class="fas fa-tachometer-alt w-5 mr-3"></i>
+                Dashboard
+            </a>
+            <div class="relative">
+                <div class="sidebar-item flex items-center px-6 py-3 bg-blue-600 text-white transition-all duration-300">
+                    <i class="fas fa-clipboard-check w-5 mr-3"></i>
+                    Kelola Absensi
+                    <i class="fas fa-chevron-down ml-auto text-xs"></i>
+                </div>
+                <div class="bg-gray-700 ml-6">
+                    <a href="attendance-in.html" class="block px-6 py-2 text-sm text-white bg-gray-600 transition-colors duration-200">
+                        <i class="fas fa-check-circle mr-2"></i>Catatan Absensi Masuk
+                    </a>
+                    <a href="attendance-out.html" class="block px-6 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-600 transition-colors duration-200">
+                        <i class="fas fa-times-circle mr-2"></i>Catatan Absensi Tidak Masuk
+                    </a>
+                </div>
+            </div>
+            <a href="users.html" class="sidebar-item flex items-center px-6 py-3 text-gray-300 hover:text-white transition-all duration-300">
+                <i class="fas fa-users w-5 mr-3"></i>
+                Data Pengguna
+            </a>
+            <a href="settings.html" class="sidebar-item flex items-center px-6 py-3 text-gray-300 hover:text-white transition-all duration-300">
+                <i class="fas fa-cog w-5 mr-3"></i>
+                Setting
+            </a>
+        </nav>
+
+        <div class="absolute bottom-6 left-6 right-6">
+                <button onclick="logout()" class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-xl transition duration-300">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                </button>
+            </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content ml-0 md:ml-64 min-h-screen bg-gray-900" id="mainContent">
+        <!-- Header -->
+        <header class="bg-gray-800 border-b border-gray-700 px-4 md:px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="ml-10 md:ml-0">
+                    <h2 class="header-title text-xl md:text-2xl font-bold text-white">Catatan Absensi Masuk</h2>
+                    <p class="header-subtitle text-xs md:text-sm text-gray-400 mt-1">Rekap data kehadiran siswa</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                        <div class="text-right hidden sm:block">
+                            <p class="text-sm text-gray-400">Admin</p>
+                            <p class="font-medium text-white" id="adminName">Memuat...</p>
+                        </div>
+                        <a href="adminprofile.html" class="w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden block">
+                            <img id="adminPhoto" src="../img/iconapp.png" alt="Foto Profil Admin"
+                                class="w-full h-full object-cover">
+                        </a>
+                    </div>
+            </div>
+        </header>
+
+        <!-- Content Section -->
+        <div class="p-4 md:p-6">
+            <!-- Filter Section -->
+            <div class="bg-gray-800 rounded-xl md:rounded-2xl border border-gray-700 p-4 md:p-6 mb-4 md:mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4 filter-grid">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-1">Filter Kelas</label>
+                        <select id="kelas" class="w-full px-3 py-2 md:px-4 md:py-2 bg-gray-700 border border-gray-600 rounded-lg md:rounded-xl text-white text-sm md:text-base focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option>Semua</option>
+                            <option>X GIM</option>
+                            <option>X RPL-1</option>
+                            <option>X RPL-2</option>
+                            <option>XI GIM</option>
+                            <option>XI RPL-1</option>
+                            <option>XI RPL-2</option>
+                            <option>XII PPLG-1</option>
+                            <option>XII PPLG-2</option>
+                            <option>XII PPLG-3</option>
+                            <option>GURU</option>
+                            <option>PENGURUS HIMPUNAN</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-1">Tanggal</label>
+                        <input id="tanggal" type="date" class="w-full px-3 py-2 md:px-4 md:py-2 bg-gray-700 border border-gray-600 rounded-lg md:rounded-xl text-white text-sm md:text-base focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    <div class="flex items-end space-x-2 action-buttons">
+                        <button id="cariData" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 md:px-4 rounded-lg md:rounded-xl transition duration-300 text-sm md:text-base">
+                            <i class="fas fa-search mr-1 md:mr-2"></i>Cari Data
+                        </button>
+                        <button id="unduhLaporan" class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-3 md:px-4 rounded-lg md:rounded-xl transition duration-300 text-sm md:text-base">
+                            <i class="fas fa-file-pdf mr-1 md:mr-2"></i>Unduh PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Result Section -->
+            <div id="hasilPencarian" class="bg-gray-800 rounded-xl md:rounded-2xl border border-gray-700 p-4 md:p-6">
+                <!-- Default state before search -->
+                <div id="default-state" class="text-center py-8 md:py-12">
+                    <div class="mx-auto w-16 h-16 md:w-24 md:h-24 bg-gray-700 rounded-full flex items-center justify-center mb-4 md:mb-6">
+                        <i class="fas fa-clipboard-list text-2xl md:text-4xl text-blue-500"></i>
+                    </div>
+                    <h3 class="text-lg md:text-xl font-bold text-white mb-2">Belum Ada Data Absensi</h3>
+                    <p class="text-gray-400 text-sm md:text-base">Silakan pilih tanggal dan kelas, lalu klik "Cari Data" untuk melihat hasil</p>
+                </div>
+
+                <!-- Loading state (hidden by default) -->
+                <div id="loading-state" class="hidden text-center py-8 md:py-12">
+                    <div class="mx-auto w-16 h-16 md:w-24 md:h-24 bg-gray-700 rounded-full flex items-center justify-center mb-4 md:mb-6 animate-pulse">
+                        <i class="fas fa-spinner fa-spin text-2xl md:text-4xl text-blue-500"></i>
+                    </div>
+                    <h3 class="text-lg md:text-xl font-bold text-white mb-2">Memuat Data...</h3>
+                </div>
+
+                <!-- Results will be inserted here -->
+                <div id="results-container" class="hidden">
+                    <!-- Dynamic content will go here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Alert -->
+    <div id="alertOverlay" class="alert-overlay"></div>
+    <div id="customAlert" class="custom-alert">
+        <div class="custom-alert-header">
+            <h3 id="alertTitle" class="custom-alert-title">Notification</h3>
+            <button id="alertClose" class="custom-alert-close">&times;</button>
+        </div>
+        <div id="alertBody" class="custom-alert-body">
+            Alert message will appear here
+        </div>
+        <div class="custom-alert-footer">
+            <button id="alertConfirm" class="custom-alert-btn custom-alert-btn-primary">OK</button>
+            <button id="alertCancel" class="custom-alert-btn custom-alert-btn-secondary">Batal</button>
+        </div>
+    </div>
+
+    <script>
+        // Konfigurasi API
+        const API_BASE_URL = 'https://absen.ahoservice.my.id';
+        const API_HEADERS = {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem('admin_token')
+        };
+
+        if (!localStorage.getItem('admin_token')) {
+            window.location.href = 'login.html';
+        }
+
+        // Mobile sidebar toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuButton = document.getElementById('mobileMenuButton');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const mainContent = document.getElementById('mainContent');
+
+            mobileMenuButton.addEventListener('click', function() {
+                sidebar.classList.toggle('active');
+                sidebarOverlay.classList.toggle('active');
+            });
+
+            sidebarOverlay.addEventListener('click', function() {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            });
+            
+            loadAdminProfile();
+
+            // Set default date to today
+            const today = new Date();
+            const formattedDate = today.toISOString().split('T')[0];
+            document.getElementById('tanggal').value = formattedDate;
+        });
+        
+        // Fungsi untuk menampilkan custom alert
+        function showAlert(title, message, type = 'info', confirmCallback = null, cancelCallback = null) {
+            const alertTitle = document.getElementById('alertTitle');
+            const alertBody = document.getElementById('alertBody');
+            const alertOverlay = document.getElementById('alertOverlay');
+            const alertElement = document.getElementById('customAlert');
+            const alertConfirm = document.getElementById('alertConfirm');
+            const alertCancel = document.getElementById('alertCancel');
+            
+            // Set title and message
+            alertTitle.textContent = title;
+            alertBody.textContent = message;
+            
+            // Set style based on type
+            switch(type) {
+                case 'success':
+                    alertTitle.style.color = '#10B981';
+                    break;
+                case 'warning':
+                    alertTitle.style.color = '#F59E0B';
+                    break;
+                case 'error':
+                    alertTitle.style.color = '#EF4444';
+                    break;
+                default:
+                    alertTitle.style.color = '#E5E7EB';
+            }
+            
+            // Show/hide buttons based on callbacks
+            if (confirmCallback) {
+                alertConfirm.style.display = 'block';
+                alertConfirm.textContent = 'Ya';
+            } else {
+                alertConfirm.style.display = 'none';
+            }
+            
+            if (cancelCallback) {
+                alertCancel.style.display = 'block';
+            } else {
+                alertCancel.style.display = 'none';
+            }
+            
+            // Show alert
+            alertOverlay.classList.add('active');
+            alertElement.classList.add('active');
+            
+            const closeAlert = () => {
+                alertOverlay.classList.remove('active');
+                alertElement.classList.remove('active');
+            };
+            
+            // Remove previous event listeners
+            alertConfirm.replaceWith(alertConfirm.cloneNode(true));
+            alertCancel.replaceWith(alertCancel.cloneNode(true));
+            document.getElementById('alertClose').replaceWith(document.getElementById('alertClose').cloneNode(true));
+            
+            // Add new event listeners
+            const newConfirm = document.getElementById('alertConfirm');
+            const newCancel = document.getElementById('alertCancel');
+            const newClose = document.getElementById('alertClose');
+            
+            if (confirmCallback) {
+                newConfirm.addEventListener('click', () => {
+                    closeAlert();
+                    confirmCallback();
+                });
+            }
+            
+            if (cancelCallback) {
+                newCancel.addEventListener('click', () => {
+                    closeAlert();
+                    cancelCallback();
+                });
+            } else {
+                newCancel.addEventListener('click', closeAlert);
+            }
+            
+            newClose.addEventListener('click', closeAlert);
+            alertOverlay.addEventListener('click', closeAlert);
+        }
+
+        // Fungsi untuk memuat data profil admin
+        async function loadAdminProfile() {
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const response = await fetch(`${API_BASE_URL}/api/admin/profile`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+
+                if (response.status === 401) {
+                    localStorage.removeItem('admin_token');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error('Gagal memuat profil admin');
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Update nama admin
+                    document.getElementById('adminName').textContent = data.data.full_name;
+
+                    // Update foto profil jika ada
+                    if (data.data.photo_url) {
+                        document.getElementById('adminPhoto').src = data.data.photo_url;
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                // Tetap tampilkan UI meskipun gagal load profil
+                document.getElementById('adminName').textContent = 'Himpunan';
+            }
+        }
+
+        document.getElementById("cariData").addEventListener("click", async () => {
+    let kelas = document.getElementById("kelas").value;
+    const tanggal = document.getElementById("tanggal").value;
+    const hasilPencarian = document.getElementById("hasilPencarian");
+    const defaultState = document.getElementById("default-state");
+    const loadingState = document.getElementById("loading-state");
+    const resultsContainer = document.getElementById("results-container");
+
+    // Show loading state
+    defaultState.classList.add("hidden");
+    loadingState.classList.remove("hidden");
+    resultsContainer.classList.add("hidden");
+
+    if (!tanggal) {
+        loadingState.classList.add("hidden");
+        defaultState.classList.remove("hidden");
+        resultsContainer.innerHTML = `
+            <div class="bg-red-900/30 border border-red-700 rounded-xl p-4 mb-4 md:mb-6">
+                <div class="flex items-start">
+                    <i class="fas fa-exclamation-circle text-red-500 mt-1 mr-3"></i>
+                    <div>
+                        <h4 class="font-bold text-white text-sm md:text-base">Peringatan</h4>
+                        <p class="text-gray-300 text-sm md:text-base">Silakan pilih tanggal terlebih dahulu.</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        resultsContainer.classList.remove("hidden");
+        return;
+    }
+
+    // Format kelas untuk API
+    let kelasForApi = kelas;
+    if (kelas.toUpperCase() !== "X GIM" && kelas.toLowerCase() !== "semua") {
+        kelasForApi = kelas.replace(/\s/g, "-");
+    }
+
+    console.log('Kelas yang dipilih:', kelas);
+    console.log('Kelas untuk API:', kelasForApi);
+    console.log('Tanggal:', tanggal);
+
+    try {
+        // 1. Ambil data absensi
+        const response = await fetch(`${API_BASE_URL}/attendance?kelas=${encodeURIComponent(kelasForApi)}&tanggal=${encodeURIComponent(tanggal)}`, {
+            headers: API_HEADERS
+        });
+        const data = await response.json();
+
+        console.log('Data absensi:', data);
+
+        // Hide loading state
+        loadingState.classList.add("hidden");
+
+        if (!response.ok || Object.keys(data).length === 0) {
+            resultsContainer.innerHTML = `
+                <div class="text-center py-6 md:py-8">
+                    <div class="mx-auto w-14 h-14 md:w-20 md:h-20 bg-gray-700 rounded-full flex items-center justify-center mb-3 md:mb-4">
+                        <i class="fas fa-search-minus text-xl md:text-3xl text-yellow-500"></i>
+                    </div>
+                    <h3 class="text-base md:text-lg font-bold text-white mb-1">Data Tidak Ditemukan</h3>
+                    <p class="text-gray-400 text-sm md:text-base">Tidak ada data absensi untuk tanggal ${tanggal}</p>
+                </div>
+            `;
+            resultsContainer.classList.remove("hidden");
+            return;
+        }
+
+        // 2. Ambil total siswa - PERBAIKAN DI SINI
+const totalResponse = await fetch(`${API_BASE_URL}/api/total-students?kelas=${encodeURIComponent(kelasForApi)}`, {
+    headers: API_HEADERS
+});
+
+let totalSiswa = 0;
+if (totalResponse.ok) {
+    const totalData = await totalResponse.json();
+    totalSiswa = totalData.total || 0;
+    console.log('Total siswa aktif:', totalSiswa);
+} else {
+    console.error('Gagal mengambil total siswa');
+}
+
+// 3. Hitung total siswa yang hadir
+let totalSiswaHadir = 0;
+if (kelas.toLowerCase() === "semua") {
+    // Untuk filter "Semua", jumlahkan count dari semua kelas
+    for (const [kelasNama, info] of Object.entries(data)) {
+        totalSiswaHadir += info.count || 0;
+    }
+} else {
+    // Untuk filter kelas tertentu
+    totalSiswaHadir = data[kelasForApi]?.count || 0;
+}
+
+const totalSiswaTidakHadir = Math.max(0, totalSiswa - totalSiswaHadir);
+
+console.log('=== SUMMARY ===');
+console.log('Total Siswa Aktif:', totalSiswa);
+console.log('Total Siswa Hadir:', totalSiswaHadir);
+console.log('Total Siswa Tidak Hadir:', totalSiswaTidakHadir);
+
+        // Create summary cards
+        let resultHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mb-4 md:mb-6 stats-grid">
+                <div class="bg-gray-700/50 border border-gray-600 rounded-lg md:rounded-xl p-3 md:p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs md:text-sm text-gray-400">Total Siswa</p>
+                            <h3 class="text-xl md:text-2xl font-bold text-white">${totalSiswa}</h3>
+                            <p class="text-xs text-blue-400 mt-1">Siswa Aktif (Non-Alumni)</p>
+                        </div>
+                        <div class="w-10 h-10 md:w-12 md:h-12 bg-blue-500/20 rounded-full flex items-center justify-center">
+                            <i class="fas fa-users text-blue-500 text-sm md:text-base"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-700/50 border border-green-600/30 rounded-lg md:rounded-xl p-3 md:p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs md:text-sm text-gray-400">Hadir</p>
+                            <h3 class="text-xl md:text-2xl font-bold text-white">${totalSiswaHadir}</h3>
+                            <p class="text-xs text-green-400 mt-1">${totalSiswa > 0 ? Math.round((totalSiswaHadir / totalSiswa) * 100) : 0}%</p>
+                        </div>
+                        <div class="w-10 h-10 md:w-12 md:h-12 bg-green-500/20 rounded-full flex items-center justify-center">
+                            <i class="fas fa-check-circle text-green-500 text-sm md:text-base"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-700/50 border border-red-600/30 rounded-lg md:rounded-xl p-3 md:p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs md:text-sm text-gray-400">Tidak Hadir</p>
+                            <h3 class="text-xl md:text-2xl font-bold text-white">${totalSiswaTidakHadir}</h3>
+                            <p class="text-xs text-red-400 mt-1">${totalSiswa > 0 ? Math.round((totalSiswaTidakHadir / totalSiswa) * 100) : 0}%</p>
+                        </div>
+                        <div class="w-10 h-10 md:w-12 md:h-12 bg-red-500/20 rounded-full flex items-center justify-center">
+                            <i class="fas fa-times-circle text-red-500 text-sm md:text-base"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Sisanya tetap sama...
+        // Create attendance list
+        resultHTML += `
+            <div class="bg-gray-700/30 border border-gray-600 rounded-lg md:rounded-xl overflow-hidden">
+                <div class="overflow-x-auto responsive-table">
+                    <table class="w-full">
+                        <thead class="bg-gray-700 text-gray-300">
+                            <tr class="table-row">
+                                <th class="py-2 px-3 md:py-3 md:px-4 text-left text-xs md:text-sm">No</th>
+                                <th class="py-2 px-3 md:py-3 md:px-4 text-left text-xs md:text-sm">Nama Siswa</th>
+                                <th class="py-2 px-3 md:py-3 md:px-4 text-left text-xs md:text-sm">Kelas</th>
+                                <th class="py-2 px-3 md:py-3 md:px-4 text-left text-xs md:text-sm">Waktu</th>
+                                <th class="py-2 px-3 md:py-3 md:px-4 text-left text-xs md:text-sm">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-600">
+        `;
+
+        let rowCount = 1;
+        if (kelas.toLowerCase() === "semua") {
+            for (const [kelasNama, info] of Object.entries(data)) {
+                info.students.forEach(student => {
+                    resultHTML += `
+                        <tr class="hover:bg-gray-700/50 transition-colors table-row">
+                            <td class="py-2 px-3 md:py-3 md:px-4 text-xs md:text-sm">${rowCount++}</td>
+                            <td class="py-2 px-3 md:py-3 md:px-4 font-medium text-xs md:text-sm">${student.nama || student}</td>
+                            <td class="py-2 px-3 md:py-3 md:px-4 text-xs md:text-sm">${kelasNama}</td>
+                            <td class="py-2 px-3 md:py-3 md:px-4 text-xs md:text-sm">${student.waktu || '-'}</td>
+                            <td class="py-2 px-3 md:py-3 md:px-4 text-xs md:text-sm">
+                                <span class="status-badge ${student.status === 'terlambat' ? 'status-late' : 'status-present'}">
+                                    ${student.status === 'terlambat' ? 'Terlambat' : 'Hadir'}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+        } else {
+            (data[kelasForApi]?.students || []).forEach(student => {
+                resultHTML += `
+                    <tr class="hover:bg-gray-700/50 transition-colors table-row">
+                        <td class="py-2 px-3 md:py-3 md:px-4 text-xs md:text-sm">${rowCount++}</td>
+                        <td class="py-2 px-3 md:py-3 md:px-4 font-medium text-xs md:text-sm">${student.nama || student}</td>
+                        <td class="py-2 px-3 md:py-3 md:px-4 text-xs md:text-sm">${kelas}</td>
+                        <td class="py-2 px-3 md:py-3 md:px-4 text-xs md:text-sm">${student.waktu || '-'}</td>
+                        <td class="py-2 px-3 md:py-3 md:px-4 text-xs md:text-sm">
+                            <span class="status-badge ${student.status === 'terlambat' ? 'status-late' : 'status-present'}">
+                                ${student.status === 'terlambat' ? 'Terlambat' : 'Hadir'}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        resultHTML += `
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+
+        resultsContainer.innerHTML = resultHTML;
+        resultsContainer.classList.remove("hidden");
+
+    } catch (error) {
+        console.error("Error fetching data:", error);
+        loadingState.classList.add("hidden");
+        resultsContainer.innerHTML = `
+            <div class="bg-red-900/30 border border-red-700 rounded-xl p-4">
+                <div class="flex items-start">
+                    <i class="fas fa-exclamation-triangle text-red-500 mt-1 mr-3"></i>
+                    <div>
+                        <h4 class="font-bold text-white text-sm md:text-base">Terjadi Kesalahan</h4>
+                        <p class="text-gray-300 text-sm md:text-base">Gagal memuat data absensi. Silakan coba lagi.</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        resultsContainer.classList.remove("hidden");
+    }
+});
+
+        document.getElementById("unduhLaporan").addEventListener("click", async () => {
+            const kelas = document.getElementById("kelas").value;
+            const tanggal = document.getElementById("tanggal").value;
+            const hasilPencarian = document.getElementById("hasilPencarian");
+
+            if (!tanggal || !hasilPencarian.innerHTML.trim()) {
+                showAlert('Peringatan', 'Silakan pilih tanggal dan pastikan ada data untuk diunduh!', 'warning');
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(16);
+            doc.text("Laporan Siswa Absensi", 14, 20);
+            doc.setFontSize(12);
+            doc.text(`Tanggal: ${tanggal}`, 14, 30);
+            doc.text(`Kelas: ${kelas}`, 14, 38);
+
+            let tableData = [];
+            let no = 1;
+
+            // Extract data from the table
+            const rows = document.querySelectorAll("#results-container table tbody tr");
+            rows.forEach(row => {
+                const cells = row.querySelectorAll("td");
+                if (cells.length >= 4) {
+                    tableData.push([
+                        no++,
+                        cells[1].textContent,
+                        cells[2].textContent,
+                        cells[3].textContent,
+                        cells[4].textContent.trim()
+                    ]);
+                }
+            });
+
+            doc.autoTable({
+                startY: 45,
+                head: [["No", "Nama", "Kelas", "Waktu", "Status"]],
+                body: tableData,
+                styles: { fontSize: 10 },
+                headStyles: { fillColor: [52, 152, 219] },
+                alternateRowStyles: { fillColor: [240, 240, 240] },
+            });
+
+            doc.save(`Laporan_Absensi_${tanggal}_${kelas}.pdf`);
+        });
+        
+        // Fungsi logout yang diperbaiki
+        async function logout() {
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                // Tampilkan konfirmasi logout dengan dua tombol (Ya dan Batal)
+                showAlert(
+                    'Konfirmasi Logout', 
+                    'Apakah Anda yakin ingin keluar dari sistem?', 
+                    'warning',
+                    async () => {
+                        // Fungsi yang dijalankan ketika tombol Ya diklik
+                        try {
+                            // Kirim request logout ke server
+                            const response = await fetch(`${API_BASE_URL}/api/admin/logout`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': 'Bearer ' + token
+                                }
+                            });
+
+                            // Hapus token lokal terlepas dari response server
+                            localStorage.removeItem('admin_token');
+                            
+                            if (response.ok) {
+                                window.location.href = 'login.html';
+                            } else {
+                                console.error('Logout server error:', await response.text());
+                                window.location.href = 'login.html';
+                            }
+                        } catch (error) {
+                            console.error('Logout error:', error);
+                            localStorage.removeItem('admin_token');
+                            window.location.href = 'login.html';
+                        }
+                    },
+                    () => {
+                        // Fungsi yang dijalankan ketika tombol Batal diklik
+                        console.log('Logout dibatalkan');
+                    }
+                );
+            } catch (error) {
+                console.error('Logout confirmation error:', error);
+                localStorage.removeItem('admin_token');
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Expose logout function to global scope
+        window.logout = logout;
+    </script>
+</body>
+</html>

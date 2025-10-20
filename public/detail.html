@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AHOBoard - Detail Absensi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="/assets/img/logonew.png" rel="shortcut icon">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        ios: {
+                            light: '#F2F2F7',
+                            dark: '#1C1C1E',
+                            group: {
+                                light: '#F2F2F7',
+                                dark: '#2C2C2E'
+                            },
+                            label: {
+                                primary: '#000000',
+                                secondary: '#3C3C4399',
+                                tertiary: '#FFFFFF',
+                                quaternary: '#3C3C432E'
+                            },
+                            fill: {
+                                primary: '#78788033',
+                                secondary: '#78788029',
+                                tertiary: '#7676801F',
+                                quaternary: '#74748014'
+                            },
+                            blue: '#0A84FF',
+                            indigo: '#5E5CE6',
+                            purple: '#BF5AF2',
+                            pink: '#FF375F',
+                            red: '#FF453A',
+                            orange: '#FF9F0A',
+                            yellow: '#FFD60A',
+                            green: '#30D158',
+                            mint: '#66D4CF',
+                            teal: '#40C8E0',
+                            cyan: '#64D2FF',
+                            gray: '#8E8E93',
+                            lavender: '#E6E6FA'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600&display=swap');
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        .ios-card {
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+        }
+        .ios-pressable:active {
+            opacity: 0.7;
+            transform: scale(0.98);
+        }
+        .ios-segment-active {
+            background-color: white !important;
+            color: black !important;
+            font-weight: 600 !important;
+        }
+        .ios-segment-inactive {
+            background-color: rgb(230, 230, 250) !important;
+            color: black !important;
+        }
+    </style>
+</head>
+
+<body class="bg-ios-light dark:bg-ios-dark text-ios-label-primary dark:text-white">
+    <div class="ios-card bg-white dark:bg-ios-dark shadow-sm sticky top-0 z-50 p-4">
+        <div class="text-center">
+            <h2 class="text-sm text-ios-label-secondary dark:text-ios-label-tertiary">Daftar Siswa Absensi</h2>
+            <h1 id="kelas-name" class="text-xl font-semibold mt-1"></h1>
+        </div>
+    </div>
+
+    <div class="p-4 max-w-md mx-auto">
+        <div class="ios-card bg-ios-group-light dark:bg-ios-group-dark rounded-2xl p-2 mb-4 flex justify-center">
+            <div class="flex rounded-full bg-ios-lavender p-1">
+                <button id="btn-hadir" class="ios-pressable px-4 py-2 rounded-full text-sm font-medium ios-segment-active">
+                    Hadir
+                </button>
+                <button id="btn-tidak-hadir" class="ios-pressable px-4 py-2 rounded-full text-sm font-medium ios-segment-inactive">
+                    Tidak Hadir
+                </button>
+            </div>
+        </div>
+
+        <div class="ios-card bg-ios-group-light dark:bg-ios-group-dark rounded-2xl p-4">
+            <h3 id="list-title" class="text-sm font-semibold mb-3 text-white dark:text-white">Daftar Absensi Hadir</h3>
+            <ul id="list-absensi" class="space-y-2">
+                <li class="text-center py-4 text-ios-label-tertiary dark:text-ios-label-tertiary">Memuat data...</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+        const listAbsensi = document.getElementById("list-absensi");
+        const listTitle = document.getElementById("list-title");
+        const btnHadir = document.getElementById("btn-hadir");
+        const btnTidakHadir = document.getElementById("btn-tidak-hadir");
+
+        // Ambil kelas dari URL
+        const params = new URLSearchParams(window.location.search);
+        const kelasParam = params.get("kelas");
+        const kelas = kelasParam ? kelasParam.replace(/-/g, " ") : null;
+        document.getElementById("kelas-name").textContent = kelas || "Kelas Tidak Diketahui";
+
+        if (!kelas) {
+            listAbsensi.innerHTML = "<li class='text-ios-red dark:text-ios-red'>Kelas tidak ditemukan!</li>";
+            return;
+        }
+
+        // Format kelas untuk API (gunakan format dengan strip)
+        const kelasForApi = kelas.replace(/\s+/g, "-");
+        const url = `https://absen.ahoservice.my.id/absensi/${encodeURIComponent(kelasForApi)}`;
+        
+        try {
+            const response = await fetch(url);
+            
+            // Cek jika response bukan JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const textResponse = await response.text();
+                throw new Error(`Response bukan JSON: ${textResponse.substring(0, 100)}...`);
+            }
+            
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.error || `Error: ${response.status}`);
+            }
+
+            if (!Array.isArray(data)) {
+                throw new Error("Format data tidak valid");
+            }
+
+            // Tampilkan data
+            dataAbsensi = data;
+            tampilkanAbsensi("hadir");
+
+            btnHadir.addEventListener("click", () => {
+                tampilkanAbsensi("hadir");
+                btnHadir.classList.add("ios-segment-active");
+                btnHadir.classList.remove("ios-segment-inactive");
+                btnTidakHadir.classList.remove("ios-segment-active");
+                btnTidakHadir.classList.add("ios-segment-inactive");
+            });
+
+            btnTidakHadir.addEventListener("click", () => {
+                tampilkanAbsensi("tidak hadir");
+                btnTidakHadir.classList.add("ios-segment-active");
+                btnTidakHadir.classList.remove("ios-segment-inactive");
+                btnHadir.classList.remove("ios-segment-active");
+                btnHadir.classList.add("ios-segment-inactive");
+            });
+
+        } catch (error) {
+            console.error("Gagal mengambil data absensi:", error);
+            listAbsensi.innerHTML = `
+                <li class="text-ios-red dark:text-ios-red">Gagal memuat data</li>
+                <li class="text-sm text-ios-label-tertiary dark:text-ios-label-tertiary">${error.message}</li>
+            `;
+        }
+
+        function tampilkanAbsensi(status) {
+            listTitle.textContent = status === "hadir" 
+                ? "Daftar Absensi Hadir" 
+                : "Daftar Absensi Tidak Hadir";
+            
+            listAbsensi.innerHTML = "";
+
+            const filteredData = dataAbsensi.filter(siswa => 
+                siswa.status.toLowerCase() === status
+            );
+            
+            if (filteredData.length === 0) {
+                listAbsensi.innerHTML = `<li class="text-center py-4 text-ios-label-tertiary dark:text-ios-label-tertiary">Tidak ada siswa yang ${status} hari ini</li>`;
+            } else {
+                filteredData.forEach((siswa) => {
+                    const li = document.createElement("li");
+                    li.className = "ios-pressable bg-white dark:bg-ios-dark rounded-xl p-3 flex items-center hover:bg-ios-fill-tertiary dark:hover:bg-ios-fill-primary active:bg-ios-fill-secondary dark:active:bg-ios-fill-secondary transition-all duration-200";
+                    
+                    const avatar = document.createElement("div");
+                    avatar.className = "w-8 h-8 rounded-full bg-ios-blue flex items-center justify-center mr-3";
+                    avatar.innerHTML = `<span class="text-white text-sm">${siswa.name.charAt(0)}</span>`;
+                    
+                    const name = document.createElement("span");
+                    name.className = "font-medium";
+                    name.textContent = siswa.name;
+                    
+                    li.appendChild(avatar);
+                    li.appendChild(name);
+                    listAbsensi.appendChild(li);
+                });
+            }
+        }
+    });
+    </script>
+</body>
+</html>

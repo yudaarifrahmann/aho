@@ -1,0 +1,29 @@
+<button id="btnBuatKartu">Buat Kartu</button>
+<div id="hasilKartu"></div>
+
+<script>
+document.getElementById("btnBuatKartu").addEventListener("click", async () => {
+  const payload = {
+    name: "Intan Agriyani",
+    class_name: "XII RPL 1",
+    nisn: "1234567890"
+  };
+
+  const res = await fetch("https://absen.ahoservice.my.id/api/buat-kartu", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await res.json();
+  if (data.image) {
+    const img = document.createElement("img");
+    img.src = "data:image/png;base64," + data.image;
+    img.style.width = "400px";
+    document.getElementById("hasilKartu").innerHTML = "";
+    document.getElementById("hasilKartu").appendChild(img);
+  } else {
+    alert("Gagal membuat kartu: " + (data.error || "Tidak diketahui"));
+  }
+});
+</script>

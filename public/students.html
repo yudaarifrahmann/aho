@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Siswa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        ios: {
+                            light: '#F2F2F7',
+                            dark: '#1C1C1E',
+                            group: {
+                                light: '#F2F2F7',
+                                dark: '#2C2C2E'
+                            },
+                            label: {
+                                primary: '#000000',
+                                secondary: '#3C3C4399',
+                                tertiary: '#3C3C434D',
+                                quaternary: '#3C3C432E'
+                            },
+                            fill: {
+                                primary: '#78788033',
+                                secondary: '#78788029',
+                                tertiary: '#7676801F',
+                                quaternary: '#74748014'
+                            },
+                            blue: '#0A84FF',
+                            indigo: '#5E5CE6',
+                            purple: '#BF5AF2',
+                            pink: '#FF375F',
+                            red: '#FF453A',
+                            orange: '#FF9F0A',
+                            yellow: '#FFD60A',
+                            green: '#30D158',
+                            mint: '#66D4CF',
+                            teal: '#40C8E0',
+                            cyan: '#64D2FF',
+                            gray: '#8E8E93'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600&display=swap');
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        .ios-card {
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+        }
+        .ios-pressable:active {
+            opacity: 0.7;
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body class="bg-ios-light dark:bg-ios-dark text-ios-label-primary dark:text-white flex flex-col items-center justify-center min-h-screen p-4 transition-colors duration-300">
+    <div class="max-w-md w-full">
+        <div class="ios-card bg-ios-group-light dark:bg-ios-group-dark rounded-2xl p-6 mb-6 shadow-sm">
+            <h1 class="text-xl font-semibold text-center text-white dark:text-white mb-6">Daftar Siswa</h1>
+            <h2 id="kelasTitle" class="text-lg font-bold mb-4 text-white dark:text-white"></h2>
+            
+            <div id="studentList" class="space-y-2">
+                <!-- Students will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const kelas = urlParams.get("kelas");
+            document.getElementById("kelasTitle").innerText = `Kelas: ${kelas}`;
+
+            fetch(`https://absen.ahoservice.my.id/students?kelas=${kelas}`)
+                .then(response => response.json())
+                .then(data => {
+                    const list = document.getElementById("studentList");
+                    list.innerHTML = "";
+                    if (data.length === 0) {
+                        list.innerHTML = `<div class="text-center text-ios-label-tertiary dark:text-ios-label-tertiary py-4">Tidak ada siswa</div>`;
+                        return;
+                    }
+                    data.data.forEach(student => {
+                        const studentElement = document.createElement("div");
+                        studentElement.className = "ios-pressable w-full py-3 px-4 bg-white dark:bg-ios-dark rounded-xl hover:bg-ios-fill-tertiary dark:hover:bg-ios-fill-primary active:bg-ios-fill-secondary dark:active:bg-ios-fill-secondary transition-all duration-200";
+                        studentElement.innerHTML = `
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-full bg-ios-blue flex items-center justify-center mr-3">
+                                    <span class="text-white text-sm">${student.name.charAt(0)}</span>
+                                </div>
+                                <span class="font-medium">${student.name}</span>
+                            </div>
+                        `;
+                        list.appendChild(studentElement);
+                    });
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    const list = document.getElementById("studentList");
+                    list.innerHTML = `<div class="text-center text-ios-red py-4">Gagal memuat data siswa</div>`;
+                });
+        });
+    </script>
+</body>
+</html>

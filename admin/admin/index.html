@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin AHO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="../img/logonew.png" rel="shortcut icon">
+    <style>
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #4B5563 #1F2937;
+        }
+        *::-webkit-scrollbar {
+            width: 6px;
+        }
+        *::-webkit-scrollbar-track {
+            background: #1F2937;
+        }
+        *::-webkit-scrollbar-thumb {
+            background: #4B5563;
+            border-radius: 3px;
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .sidebar-item:hover {
+            background: linear-gradient(90deg, #3B82F6 0%, #1D4ED8 100%);
+            transform: translateX(4px);
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .status-present {
+            background-color: #10B981;
+            color: white;
+        }
+        .status-late {
+            background-color: #F59E0B;
+            color: white;
+        }
+        .status-permission {
+            background-color: #3B82F6;
+            color: white;
+        }
+        .status-absent {
+            background-color: #EF4444;
+            color: white;
+        }
+        
+        /* Mobile Styles */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                z-index: 50;
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .mobile-menu-btn {
+                display: block;
+            }
+            .stats-card p:nth-child(2) {
+                font-size: 1.5rem;
+            }
+            .header-title {
+                font-size: 1.25rem;
+            }
+            .header-subtitle {
+                font-size: 0.75rem;
+            }
+        }
+        
+        /* Overlay for mobile sidebar */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+        }
+        .sidebar-overlay.active {
+            display: block;
+        }
+        
+        /* Custom Alert Styles */
+        .custom-alert {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #1F2937 0%, #111827 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            border: 1px solid #374151;
+            z-index: 1000;
+            max-width: 90%;
+            width: 400px;
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .custom-alert.active {
+            display: block;
+        }
+
+        .custom-alert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #374151;
+        }
+
+        .custom-alert-title {
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: #E5E7EB;
+        }
+
+        .custom-alert-close {
+            background: none;
+            border: none;
+            color: #9CA3AF;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .custom-alert-close:hover {
+            color: #E5E7EB;
+        }
+
+        .custom-alert-body {
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+
+        .custom-alert-footer {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .custom-alert-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .custom-alert-btn-primary {
+            background-color: #3B82F6;
+            color: white;
+            border: none;
+        }
+
+        .custom-alert-btn-primary:hover {
+            background-color: #2563EB;
+        }
+
+        .alert-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .alert-overlay.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -55%);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen">
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn fixed top-4 left-4 z-30 bg-gray-800 p-2 rounded-lg md:hidden" id="mobileMenuButton">
+        <i class="fas fa-bars text-white"></i>
+    </button>
+    
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <!-- Main Container -->
+    <div>
+        <!-- Sidebar -->
+        <div class="sidebar fixed left-0 top-0 h-full w-64 bg-gray-800 border-r border-gray-700 z-40" id="sidebar">
+            <div class="p-6 border-b border-gray-700">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-blue-600 rounded-full overflow-hidden flex items-center justify-center">
+                        <img src="https://absen.ahoservice.my.id/assets/img/iconapp.png" alt="AHO Logo" class="w-full h-full object-cover">
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-white">AHO Admin</h1>
+                        <p class="text-sm text-gray-400">Dashboard</p>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="mt-6">
+                <a href="index.html" class="sidebar-item flex items-center px-6 py-3 bg-blue-600 text-white transition-all duration-300">
+                    <i class="fas fa-tachometer-alt w-5 mr-3"></i>
+                    Dashboard
+                </a>
+                <div class="relative">
+                    <div class="sidebar-item flex items-center px-6 py-3 text-gray-300 hover:text-white transition-all duration-300">
+                        <i class="fas fa-clipboard-check w-5 mr-3"></i>
+                        Kelola Absensi
+                        <i class="fas fa-chevron-down ml-auto text-xs"></i>
+                    </div>
+                    <div class="bg-gray-700 ml-6">
+                        <a href="attendance-in.html" class="block px-6 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-600 transition-colors duration-200">
+                            <i class="fas fa-check-circle mr-2"></i>Catatan Absensi Masuk
+                        </a>
+                        <a href="attendance-out.html" class="block px-6 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-600 transition-colors duration-200">
+                            <i class="fas fa-times-circle mr-2"></i>Catatan Absensi Tidak Masuk
+                        </a>
+                    </div>
+                </div>
+                <a href="users.html" class="sidebar-item flex items-center px-6 py-3 text-gray-300 hover:text-white transition-all duration-300">
+                    <i class="fas fa-users w-5 mr-3"></i>
+                    Data Pengguna
+                </a>
+                <a href="settings.html" class="sidebar-item flex items-center px-6 py-3 text-gray-300 hover:text-white transition-all duration-300">
+                    <i class="fas fa-cog w-5 mr-3"></i>
+                    Setting
+                </a>
+            </nav>
+
+            <div class="absolute bottom-6 left-6 right-6">
+                <button onclick="logout()" class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-xl transition duration-300">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content ml-0 md:ml-64 min-h-screen bg-gray-900" id="mainContent">
+            <!-- Header -->
+            <header class="bg-gray-800 border-b border-gray-700 px-4 md:px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="ml-10 md:ml-0">
+                        <h2 class="header-title text-xl md:text-2xl font-bold text-white">Dashboard</h2>
+                        <p class="header-subtitle text-xs md:text-sm text-gray-400 mt-1">Selamat datang di dashboard admin AHO</p>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="text-right hidden sm:block">
+                            <p class="text-sm text-gray-400">Admin</p>
+                            <p class="font-medium text-white" id="adminName">Memuat...</p>
+                        </div>
+                        <a href="adminprofile.html" class="w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden block">
+                            <img id="adminPhoto" src="../img/iconapp.png" alt="Foto Profil Admin"
+                                class="w-full h-full object-cover">
+                        </a>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Content -->
+            <div class="p-4 md:p-6">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
+                    <div class="stats-card bg-gray-800 rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-700 card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-400 text-xs md:text-sm">Total Hadir Hari Ini</p>
+                                <p class="text-2xl md:text-3xl font-bold text-green-400">Memuat...</p>
+                                <p class="text-green-500 text-xs mt-1"><i class="fas fa-arrow-up mr-1"></i> 5% dari kemarin</p>
+                            </div>
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-green-600 rounded-full flex items-center justify-center">
+                                <i class="fas fa-check text-white text-sm md:text-base"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stats-card bg-gray-800 rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-700 card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-400 text-xs md:text-sm">Total Tidak Hadir</p>
+                                <p class="text-2xl md:text-3xl font-bold text-green-400">Memuat...</p>
+                            </div>
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-red-600 rounded-full flex items-center justify-center">
+                                <i class="fas fa-times text-white text-sm md:text-base"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stats-card bg-gray-800 rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-700 card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-400 text-xs md:text-sm">Total Siswa</p>
+                                <p class="text-2xl md:text-3xl font-bold text-green-400">Memuat...</p>
+                            </div>
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-blue-600 rounded-full flex items-center justify-center">
+                                <i class="fas fa-users text-white text-sm md:text-base"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stats-card bg-gray-800 rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-700 card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-400 text-xs md:text-sm">Persentase Hadir</p>
+                                <p class="text-2xl md:text-3xl font-bold text-green-400">Memuat...</p>
+                            </div>
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-yellow-600 rounded-full flex items-center justify-center">
+                                <i class="fas fa-chart-pie text-white text-sm md:text-base"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
+                    <div class="stats-card bg-gray-800 rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-700 card-hover">
+                        <h3 class="text-lg md:text-xl font-bold text-white mb-3 md:mb-4">Grafik Kehadiran per Kelas</h3>
+                        <div class="chart-container" style="position: relative; height:250px;">
+                            <canvas id="classChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-gray-800 rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-700">
+                        <h3 class="text-lg md:text-xl font-bold text-white mb-3 md:mb-4">Perbandingan Kehadiran 7 Hari Terakhir</h3>
+                        <div class="chart-container" style="position: relative; height:250px;">
+                            <canvas id="comparisonChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="stats-card bg-gray-800 rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-700 card-hover">
+                    <div class="flex justify-between items-center mb-3 md:mb-4">
+                        <h3 class="text-lg md:text-xl font-bold text-white">Aktivitas Terkini</h3>
+                        <a href="#" class="text-blue-500 hover:text-blue-400 text-xs md:text-sm">Lihat Semua</a>
+                    </div>
+                    <ul id="recent-activity-list" class="space-y-3 md:space-y-4 text-sm md:text-base"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Custom Alert -->
+    <div id="alertOverlay" class="alert-overlay"></div>
+    <div id="customAlert" class="custom-alert">
+        <div class="custom-alert-header">
+            <h3 id="alertTitle" class="custom-alert-title">Notification</h3>
+            <button id="alertClose" class="custom-alert-close">&times;</button>
+        </div>
+        <div id="alertBody" class="custom-alert-body">
+            Alert message will appear here
+        </div>
+        <div class="custom-alert-footer">
+            <button id="alertConfirm" class="custom-alert-btn custom-alert-btn-primary">OK</button>
+        </div>
+    </div>
+
+    <script>
+        // Konfigurasi API
+        const API_BASE_URL = 'https://absen.ahoservice.my.id';
+        const API_HEADERS = {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem('admin_token')
+        };
+
+        if (!localStorage.getItem('admin_token')) {
+            window.location.href = 'login.html';
+        }
+
+        let classChart, comparisonChart;
+
+        // Mobile sidebar toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuButton = document.getElementById('mobileMenuButton');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const mainContent = document.getElementById('mainContent');
+
+            mobileMenuButton.addEventListener('click', function() {
+                sidebar.classList.toggle('active');
+                sidebarOverlay.classList.toggle('active');
+            });
+
+            sidebarOverlay.addEventListener('click', function() {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            });
+
+            // Load data
+            loadDashboardData();
+            loadAdminProfile();
+            
+            // Handle window resize for charts
+            window.addEventListener('resize', function() {
+                if (classChart) classChart.resize();
+                if (comparisonChart) comparisonChart.resize();
+            });
+        });
+
+        // Fungsi untuk mengupdate UI dengan data
+        function updateDashboardUI(stats, classData, weeklyData, activities) {
+            // Update stat cards
+            document.querySelector('.stats-card:nth-child(1) p:nth-child(2)').textContent = stats.presentToday;
+            document.querySelector('.stats-card:nth-child(2) p:nth-child(2)').textContent = stats.absentToday;
+            document.querySelector('.stats-card:nth-child(3) p:nth-child(2)').textContent = stats.totalStudents;
+            document.querySelector('.stats-card:nth-child(4) p:nth-child(2)').textContent = stats.attendancePercentage + '%';
+
+            // Update grafik
+            updateCharts(classData, weeklyData);
+
+            // Update aktivitas terkini
+            updateRecentActivities(activities);
+        }
+
+        // Fungsi untuk update chart dengan data dari API
+        function updateCharts(classData, weeklyData) {
+            // Update Class Chart
+            if (classChart) classChart.destroy();
+            const classCtx = document.getElementById('classChart').getContext('2d');
+            classChart = new Chart(classCtx, {
+                type: 'bar',
+                data: {
+                    labels: classData.map(item => item.class_name),
+                    datasets: [{
+                        label: 'Jumlah Hadir',
+                        data: classData.map(item => item.total_present),
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 5
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                boxWidth: 12,
+                                padding: 10,
+                                font: {
+                                    size: window.innerWidth < 768 ? 10 : 12
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Update Weekly Comparison Chart
+            if (comparisonChart) comparisonChart.destroy();
+            const comparisonCtx = document.getElementById('comparisonChart').getContext('2d');
+            comparisonChart = new Chart(comparisonCtx, {
+                type: 'line',
+                data: {
+                    labels: weeklyData.map(item => item.day),
+                    datasets: [
+                        {
+                            label: 'Hadir',
+                            data: weeklyData.map(item => item.present),
+                            borderColor: 'rgba(16, 185, 129, 1)',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            borderWidth: 2,
+                            fill: true
+                        },
+                        {
+                            label: 'Tidak Hadir',
+                            data: weeklyData.map(item => item.absent),
+                            borderColor: 'rgba(239, 68, 68, 1)',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            borderWidth: 2,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                boxWidth: 12,
+                                padding: 10,
+                                font: {
+                                    size: window.innerWidth < 768 ? 10 : 12
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Fungsi untuk memuat data profil admin
+        async function loadAdminProfile() {
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const response = await fetch(`${API_BASE_URL}/api/admin/profile`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+
+                if (response.status === 401) {
+                    localStorage.removeItem('admin_token');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error('Gagal memuat profil admin');
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Update nama admin
+                    document.getElementById('adminName').textContent = data.data.full_name;
+
+                    // Update foto profil jika ada
+                    if (data.data.photo_url) {
+                        document.getElementById('adminPhoto').src = data.data.photo_url;
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('adminName').textContent = 'Admin';
+            }
+        }
+
+        // Fungsi untuk memuat data dashboard
+        async function loadDashboardData() {
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                };
+
+                const [statsRes, classRes, weeklyRes] = await Promise.all([
+                    fetch(`${API_BASE_URL}/api/dashboard/stats`, { headers }),
+                    fetch(`${API_BASE_URL}/api/dashboard/class-stats`, { headers }),
+                    fetch(`${API_BASE_URL}/api/dashboard/weekly-comparison`, { headers })
+                ]);
+
+                if (statsRes.status === 401 || classRes.status === 401 || weeklyRes.status === 401) {
+                    localStorage.removeItem('admin_token');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                if (!statsRes.ok || !classRes.ok || !weeklyRes.ok) {
+                    const errorData = await statsRes.json().catch(() => ({}));
+                    throw new Error(errorData.error || 'Gagal memuat data dashboard');
+                }
+
+                const [stats, classData, weeklyData] = await Promise.all([
+                    statsRes.json(),
+                    classRes.json(),
+                    weeklyRes.json()
+                ]);
+
+                if (stats.success && classData.success && weeklyData.success) {
+                    updateDashboardUI(stats.data, classData.data, weeklyData.data, []);
+                } else {
+                    throw new Error('Format data tidak valid');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('Error', 'Gagal memuat data dashboard: ' + error.message, 'error');
+            }
+        }
+
+        // Fungsi untuk update aktivitas terbaru
+        function updateRecentActivities(activities) {
+            const activityList = document.getElementById('recent-activity-list');
+            if (!activityList) return;
+
+            activityList.innerHTML = '';
+            activities.forEach(act => {
+                const li = document.createElement('li');
+                li.className = 'flex items-start';
+                
+                let iconClass = 'fas fa-question-circle';
+                let iconColor = 'text-gray-400';
+                
+                if (act.status.toLowerCase().includes('hadir')) {
+                    iconClass = 'fas fa-check-circle';
+                    iconColor = 'text-green-500';
+                } else if (act.status.toLowerCase().includes('tidak')) {
+                    iconClass = 'fas fa-times-circle';
+                    iconColor = 'text-red-500';
+                } else if (act.status.toLowerCase().includes('izin')) {
+                    iconClass = 'fas fa-envelope';
+                    iconColor = 'text-blue-500';
+                }
+                
+                li.innerHTML = `
+                    <div class="mr-3 mt-1">
+                        <i class="${iconClass} ${iconColor}"></i>
+                    </div>
+                    <div>
+                        <span class="font-medium">${act.name}</span> (${act.class}) - 
+                        <span class="${getStatusColorClass(act.status)}">${act.status}</span>
+                        <p class="text-xs text-gray-400 mt-1">${formatTime(act.time)}</p>
+                    </div>
+                `;
+                activityList.appendChild(li);
+            });
+        }
+
+        function getStatusColorClass(status) {
+            if (status.toLowerCase().includes('hadir')) return 'text-green-400';
+            if (status.toLowerCase().includes('tidak')) return 'text-red-400';
+            if (status.toLowerCase().includes('izin')) return 'text-blue-400';
+            if (status.toLowerCase().includes('terlambat')) return 'text-yellow-400';
+            return 'text-gray-400';
+        }
+
+        function formatTime(timeString) {
+            if (!timeString) return '';
+            const date = new Date(timeString);
+            return date.toLocaleString('id-ID', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Fungsi untuk menampilkan alert
+        function showAlert(title, message, type = 'info') {
+            const alertTitle = document.getElementById('alertTitle');
+            const alertBody = document.getElementById('alertBody');
+            const alertOverlay = document.getElementById('alertOverlay');
+            const alertElement = document.getElementById('customAlert');
+            
+            alertTitle.textContent = title;
+            alertBody.textContent = message;
+            
+            // Set warna berdasarkan tipe alert
+            switch(type) {
+                case 'success':
+                    alertTitle.style.color = '#10B981';
+                    break;
+                case 'warning':
+                    alertTitle.style.color = '#F59E0B';
+                    break;
+                case 'error':
+                    alertTitle.style.color = '#EF4444';
+                    break;
+                default:
+                    alertTitle.style.color = '#E5E7EB';
+            }
+            
+            alertOverlay.classList.add('active');
+            alertElement.classList.add('active');
+            
+            // Setup event listeners
+            const alertConfirm = document.getElementById('alertConfirm');
+            const alertClose = document.getElementById('alertClose');
+            
+            const closeAlert = () => {
+                alertOverlay.classList.remove('active');
+                alertElement.classList.remove('active');
+            };
+            
+            // Hapus event listener sebelumnya untuk menghindari duplikasi
+            alertConfirm.replaceWith(alertConfirm.cloneNode(true));
+            alertClose.replaceWith(alertClose.cloneNode(true));
+            
+            // Tambahkan event listener baru
+            document.getElementById('alertConfirm').addEventListener('click', closeAlert);
+            document.getElementById('alertClose').addEventListener('click', closeAlert);
+            alertOverlay.addEventListener('click', closeAlert);
+        }
+
+        // Fungsi logout
+        async function logout() {
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                // Tampilkan konfirmasi logout
+                showAlert('Konfirmasi Logout', 'Apakah Anda yakin ingin keluar dari sistem?', 'warning');
+                
+                // Ganti alert confirm dengan custom handler
+                const alertConfirm = document.getElementById('alertConfirm');
+                alertConfirm.textContent = 'Ya, Logout';
+                alertConfirm.addEventListener('click', async function handler() {
+                    try {
+                        // Kirim request logout ke server
+                        const response = await fetch(`${API_BASE_URL}/api/admin/logout`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': 'Bearer ' + token
+                            }
+                        });
+
+                        // Hapus token lokal terlepas dari response server
+                        localStorage.removeItem('admin_token');
+                        
+                        if (response.ok) {
+                            window.location.href = 'login.html';
+                        } else {
+                            console.error('Logout server error:', await response.text());
+                            window.location.href = 'login.html';
+                        }
+                    } catch (error) {
+                        console.error('Logout error:', error);
+                        localStorage.removeItem('admin_token');
+                        window.location.href = 'login.html';
+                    }
+                });
+            } catch (error) {
+                console.error('Logout confirmation error:', error);
+                localStorage.removeItem('admin_token');
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Expose logout function to global scope
+        window.logout = logout;
+    </script>
+</body>
+</html>

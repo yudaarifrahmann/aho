@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Absensi Himpunan Online</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+    <link href="/assets/img/logonew.png" rel="shortcut icon">
+    <style>
+        :root {
+            --primary: #6750A4;
+            --on-primary: #FFFFFF;
+            --primary-container: #EADDFF;
+            --on-primary-container: #21005D;
+            --secondary: #625B71;
+            --on-secondary: #FFFFFF;
+            --secondary-container: #E8DEF8;
+            --on-secondary-container: #1D192B;
+            --tertiary: #7D5260;
+            --on-tertiary: #FFFFFF;
+            --tertiary-container: #FFD8E4;
+            --on-tertiary-container: #31111D;
+            --error: #B3261E;
+            --on-error: #FFFFFF;
+            --error-container: #F9DEDC;
+            --on-error-container: #410E0B;
+            --background: #1C1B1F;
+            --on-background: #E6E1E5;
+            --surface: #1C1B1F;
+            --on-surface: #E6E1E5;
+            --surface-variant: #49454F;
+            --on-surface-variant: #CAC4D0;
+            --outline: #938F99;
+            --shadow: #000000;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--on-background);
+            font-family: 'Roboto', sans-serif;
+        }
+
+        /* Header */
+        .header {
+            background-color: var(--surface);
+            border-bottom: 1px solid var(--surface-variant);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Profile Card */
+        .profile-card {
+            background-color: var(--surface-variant);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        /* Menu Item */
+        .menu-item-card {
+            background-color: var(--surface-variant);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            cursor: pointer;
+        }
+
+        .menu-item-card:hover {
+            transform: translateY(-2px);
+            background-color: var(--primary-container);
+        }
+
+        .menu-item-content {
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .menu-item-card i {
+            margin-right: 16px;
+            color: var(--primary);
+        }
+
+        .menu-item-title {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .menu-item-description {
+            font-size: 0.8rem;
+            color: var(--on-surface-variant);
+            opacity: 0.8;
+            margin-top: 4px;
+            margin-left: 32px; /* Sesuaikan dengan ikon */
+        }
+
+        /* Bottom Navigation */
+        .menu-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--surface);
+            border-top: 1px solid var(--surface-variant);
+            box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.2);
+            border-radius: 28px 28px 0 0;
+            padding: 8px 0;
+            display: flex;
+            justify-content: space-around;
+            height: 72px;
+            z-index: 100;
+        }
+
+        .menu-item {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--on-surface-variant);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 80px;
+            height: 100%;
+            text-decoration: none;
+        }
+
+        .menu-item.active {
+            color: var(--primary);
+            transform: translateY(-8px);
+        }
+
+        .menu-item i {
+            font-size: 1.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 1;
+            background: var(--surface);
+            padding: 12px;
+            border-radius: 16px;
+        }
+
+        .menu-item.active i {
+            background: var(--primary-container);
+            color: var(--primary);
+            box-shadow: 0 4px 8px rgba(103, 80, 164, 0.2);
+        }
+
+        .menu-label {
+            font-size: 0.75rem;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: absolute;
+            bottom: 8px;
+            background: var(--primary-container);
+            color: var(--primary);
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .menu-item.active .menu-label {
+            opacity: 1;
+            bottom: 12px;
+        }
+
+        .active-indicator {
+            position: absolute;
+            top: 6px;
+            width: 8px;
+            height: 8px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .menu-item.active .active-indicator {
+            opacity: 1;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.8);
+                opacity: 0.8;
+            }
+            70% {
+                transform: scale(1.3);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+        }
+
+        /* Initials Avatar */
+        .initials-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: var(--on-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            font-weight: bold;
+            border: 4px solid var(--primary-container);
+            margin: 0 auto 16px;
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--primary);
+            color: var(--on-primary);
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body class="flex flex-col items-center justify-between min-h-screen">
+    <div class="w-full max-w-md">
+        <!-- Header -->
+        <div class="header text-on-surface py-4 px-4 rounded-b-3xl relative">
+            <div class="flex items-center">
+                <img alt="Logo" class="h-12 w-12 rounded-full" height="64" src="/assets/img/iconapp.png" width="64" />
+                <div class="ml-4">
+                    <h1 class="text-lg font-bold">AHO</h1>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-grow p-6 flex flex-col pt-20">
+            <div class="profile-card mb-6">
+                <div class="profile-picture-container">
+                    <div id="initials-avatar" class="initials-avatar"></div>
+                </div>
+                <h2 class="text-xl font-bold" id="user-name">Nama Pengguna</h2>
+            </div>
+            
+            <div class="profile-menu">
+                <a href="ahomanage.html" class="menu-item-card" id="biodata-btn">
+                    <div class="menu-item-content">
+                        <i class="fas fa-cog"></i>
+                        <span class="menu-item-title">AHOManage</span>
+                    </div>
+                    <div class="menu-item-description">Lihat Absensi Masuk, Data Siswa, dll.</div>
+                </a>
+                <a href="https://ahoservice.my.id" class="menu-item-card">
+                    <div class="menu-item-content">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="menu-item-title">Informasi</span>
+                    </div>
+                    <div class="menu-item-description">Lihat informasi seputar AHO.</div>
+                </a>
+                <a href="#" class="menu-item-card">
+                    <div class="menu-item-content">
+                        <i class="fas fa-comment-alt"></i>
+                        <span class="menu-item-title">Kritik & Saran</span>
+                    </div>
+                    <div class="menu-item-description">Berikan tanggapan kamu terhadap sistem ini!</div>
+                </a>
+                <a href="/index.html" class="menu-item-card">
+                    <div class="menu-item-content">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span class="menu-item-title">Keluar</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="menu-container">
+        <a class="menu-item" href="home.html">
+            <div class="active-indicator"></div>
+            <i class="fas fa-home"></i>
+            <span class="menu-label">Home</span>
+        </a>
+        <a class="menu-item" href="attendance.html">
+            <div class="active-indicator"></div>
+            <i class="fas fa-fingerprint"></i>
+            <span class="menu-label">Absen</span>
+        </a>
+        <a class="menu-item" href="history.html">
+            <div class="active-indicator"></div>
+            <i class="fas fa-history"></i>
+            <span class="menu-label">Riwayat</span>
+        </a>
+        <a class="menu-item active" href="profile.html">
+            <div class="active-indicator"></div>
+            <i class="fas fa-user"></i>
+            <span class="menu-label">Profile</span>
+        </a>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const userName = localStorage.getItem("userName");
+            if (userName) {
+                document.getElementById("user-name").textContent = userName;
+                // Create initials from name
+                createInitialsAvatar(userName);
+            }
+
+            const currentPage = window.location.pathname.split('/').pop();
+            const menuItems = document.querySelectorAll('.menu-item');
+            
+            menuItems.forEach(item => {
+                const href = item.getAttribute('href').split('/').pop();
+                if (href === currentPage) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+
+            function createInitialsAvatar(name) {
+                const initials = name.split(' ')
+                    .map(part => part[0])
+                    .join('')
+                    .toUpperCase();
+                
+                const avatar = document.getElementById("initials-avatar");
+                avatar.textContent = initials.substring(0, 1);
+                
+                const colors = ['#6750A4', '#7D5260', '#625B71', '#B3261E', '#7D5260'];
+                const hash = name.split('').reduce((acc, char) => char.charCodeAt(0) + acc, 0);
+                const colorIndex = hash % colors.length;
+                avatar.style.backgroundColor = colors[colorIndex];
+            }
+        });
+    </script>
+</body>
+</html>

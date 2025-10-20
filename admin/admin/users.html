@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Pengguna - Dashboard Admin AHO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { scrollbar-width: thin; scrollbar-color: #4B5563 #1F2937; }
+        *::-webkit-scrollbar { width: 6px; }
+        *::-webkit-scrollbar-track { background: #1F2937; }
+        *::-webkit-scrollbar-thumb { background: #4B5563; border-radius: 3px; }
+        .sidebar-item:hover { background: linear-gradient(90deg, #3B82F6 0%, #1D4ED8 100%); transform: translateX(4px); transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); transition: all 0.3s ease; }
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        /* Mobile Sidebar Styles */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                z-index: 50;
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .mobile-menu-btn {
+                display: block;
+            }
+            .header-title {
+                font-size: 1.25rem;
+            }
+            .header-subtitle {
+                font-size: 0.75rem;
+            }
+        }
+        
+        /* Overlay for mobile sidebar */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+        }
+        .sidebar-overlay.active {
+            display: block;
+        }
+        
+        /* Custom Alert Styles */
+        .custom-alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            max-width: 350px;
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            z-index: 9999;
+            transform: translateX(150%);
+            transition: transform 0.3s ease-out;
+        }
+
+        .custom-alert.show {
+            transform: translateX(0);
+        }
+
+        .custom-alert.success {
+            background-color: #10B981;
+            color: white;
+        }
+
+        .custom-alert.error {
+            background-color: #EF4444;
+            color: white;
+        }
+
+        .custom-alert.warning {
+            background-color: #F59E0B;
+            color: white;
+        }
+
+        .custom-alert.info {
+            background-color: #3B82F6;
+            color: white;
+        }
+
+        .custom-alert .icon {
+            margin-right: 12px;
+            font-size: 20px;
+        }
+
+        .custom-alert .content {
+            flex: 1;
+        }
+
+        .custom-alert .close-btn {
+            margin-left: 12px;
+            background: none;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            font-size: 16px;
+            opacity: 0.8;
+        }
+
+        .custom-alert .close-btn:hover {
+            opacity: 1;
+        }
+        
+        /* Responsive table styles */
+        @media (max-width: 640px) {
+            .responsive-table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+            .student-card {
+                min-width: 280px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen">
+
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn fixed top-4 left-4 z-30 bg-gray-800 p-2 rounded-lg md:hidden" id="mobileMenuButton">
+        <i class="fas fa-bars text-white"></i>
+    </button>
+    
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <!-- Sidebar -->
+    <div class="sidebar fixed left-0 top-0 h-full w-64 bg-gray-800 border-r border-gray-700 z-40" id="sidebar">
+        <div class="p-6 border-b border-gray-700">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-blue-600 rounded-full overflow-hidden flex items-center justify-center">
+                        <img src="https://absen.ahoservice.my.id/assets/img/iconapp.png" alt="AHO Logo" class="w-full h-full object-cover">
+                    </div>
+                <div>
+                    <h1 class="text-xl font-bold text-white">AHO Admin</h1>
+                    <p class="text-sm text-gray-400">Absensi Masuk</p>
+                </div>
+            </div>
+        </div>
+        
+        <nav class="mt-6">
+            <a href="index.html" class="sidebar-item flex items-center px-6 py-3 text-gray-300 hover:text-white transition-all duration-300">
+                <i class="fas fa-tachometer-alt w-5 mr-3"></i> Dashboard
+            </a>
+            <div class="relative">
+                <div class="sidebar-item flex items-center px-6 py-3 text-gray-300 hover:text-white transition-all duration-300">
+                    <i class="fas fa-clipboard-check w-5 mr-3"></i> Kelola Absensi
+                    <i class="fas fa-chevron-down ml-auto text-xs"></i>
+                </div>
+                <div class="bg-gray-700 ml-6">
+                    <a href="attendance-in.html" class="block px-6 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-600 transition-colors duration-200">
+                        <i class="fas fa-check-circle mr-2"></i> Catatan Absensi Masuk
+                    </a>
+                    <a href="attendance-out.html" class="block px-6 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-600 transition-colors duration-200">
+                        <i class="fas fa-times-circle mr-2"></i> Catatan Absensi Tidak Masuk
+                    </a>
+                </div>
+            </div>
+            <a href="users.html" class="sidebar-item flex items-center px-6 py-3 bg-blue-600 text-white transition-all duration-300">
+                <i class="fas fa-users w-5 mr-3"></i> Data Pengguna
+            </a>
+            <a href="settings.html" class="sidebar-item flex items-center px-6 py-3 text-gray-300 hover:text-white transition-all duration-300">
+                <i class="fas fa-cog w-5 mr-3"></i> Setting
+            </a>
+        </nav>
+
+        <div class="absolute bottom-6 left-6 right-6">
+            <button onclick="logout()" class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-xl transition duration-300">
+                <i class="fas fa-sign-out-alt mr-2"></i> Logout
+            </button>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content ml-0 md:ml-64 min-h-screen bg-gray-900" id="mainContent">
+        <!-- Header -->
+        <header class="bg-gray-800 border-b border-gray-700 px-4 md:px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="ml-10 md:ml-0">
+                    <h2 class="header-title text-xl md:text-2xl font-bold text-white">Data Pengguna AHO</h2>
+                    <p class="header-subtitle text-xs md:text-sm text-gray-400 mt-1">Daftar siswa PPLG</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                        <div class="text-right hidden sm:block">
+                            <p class="text-sm text-gray-400">Admin</p>
+                            <p class="font-medium text-white" id="adminName">Memuat...</p>
+                        </div>
+                        <a href="adminprofile.html" class="w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden block">
+                            <img id="adminPhoto" src="../img/iconapp.png" alt="Foto Profil Admin"
+                                class="w-full h-full object-cover">
+                        </a>
+                    </div>
+            </div>
+        </header>
+        
+        <!-- Users Section -->
+        <div id="usersSection" class="p-4 md:p-6 fade-in">
+            <div class="bg-gray-800 rounded-xl md:rounded-2xl border border-gray-700">
+                <div class="p-4 md:p-6 border-b border-gray-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div class="w-full">
+                        <h3 class="text-lg md:text-xl font-bold text-white mb-2">Data Pengguna</h3>
+                        <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+                            <select id="classSelect" class="px-3 py-2 md:px-4 md:py-2 bg-gray-700 border border-gray-600 rounded-lg md:rounded-xl text-white text-sm md:text-base">
+                                <option value="Semua">Semua Kelas</option>
+                                <option value="X-GIM">X-GIM</option>
+                                <option value="X-RPL-1">X-RPL-1</option>
+                                <option value="X-RPL-2">X-RPL-2</option>
+                                <option value="XI-GIM">XI-GIM</option>
+                                <option value="XI-RPL-1">XI-RPL-1</option>
+                                <option value="XI-RPL-2">XI-RPL-2</option>
+                                <option value="XII-PPLG-1">XII-PPLG-1</option>
+                                <option value="XII-PPLG-2">XII-PPLG-2</option>
+                                <option value="XII-PPLG-3">XII-PPLG-3</option>
+                            </select>
+                            <button id="addStudentBtn" class="px-3 py-2 md:px-4 md:py-2 bg-green-600 hover:bg-green-700 rounded-lg md:rounded-xl text-white text-sm md:text-base whitespace-nowrap">
+                                <i class="fas fa-plus mr-2"></i>Tambah Siswa
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="p-4 md:p-6">
+                    <div id="studentsList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+                        <!-- Data akan dimuat di sini -->
+                        <div class="col-span-full text-center py-8">
+                            <i class="fas fa-spinner fa-spin text-blue-500 text-2xl"></i>
+                            <p class="text-gray-400 mt-2">Memuat data...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Form -->
+        <div id="studentModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 px-4">
+            <div class="bg-gray-800 rounded-xl p-4 md:p-6 w-full max-w-md">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 id="modalTitle" class="text-lg md:text-xl font-bold text-white"></h3>
+                    <button id="closeModal" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <form id="studentForm">
+                    <input type="hidden" id="studentId">
+                    <div class="mb-4">
+                        <label class="block text-gray-300 mb-2 text-sm md:text-base">Nama Lengkap</label>
+                        <input type="text" id="studentName" class="w-full px-3 py-2 md:px-4 md:py-2 bg-gray-700 border border-gray-600 rounded-lg md:rounded-xl text-white text-sm md:text-base" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-300 mb-2 text-sm md:text-base">Kelas</label>
+                        <input type="text" id="studentClass" class="w-full px-3 py-2 md:px-4 md:py-2 bg-gray-700 border border-gray-600 rounded-lg md:rounded-xl text-white text-sm md:text-base" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-300 mb-2 text-sm md:text-base">NIS</label>
+                        <input type="text" id="studentNis" class="w-full px-3 py-2 md:px-4 md:py-2 bg-gray-700 border border-gray-600 rounded-lg md:rounded-xl text-white text-sm md:text-base">
+                    </div>
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" id="cancelBtn" class="px-3 py-2 md:px-4 md:py-2 bg-gray-600 hover:bg-gray-700 rounded-lg md:rounded-xl text-white text-sm md:text-base">Batal</button>
+                        <button type="submit" id="saveBtn" class="px-3 py-2 md:px-4 md:py-2 bg-blue-600 hover:bg-blue-700 rounded-lg md:rounded-xl text-white text-sm md:text-base">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Custom Confirm Modal -->
+        <div id="confirmModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 px-4">
+            <div class="bg-gray-800 rounded-xl p-4 md:p-6 w-full max-w-md">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg md:text-xl font-bold text-white">Konfirmasi</h3>
+                    <button id="closeConfirmModal" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="mb-4 md:mb-6">
+                    <p id="confirmMessage" class="text-gray-300 text-sm md:text-base"></p>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button id="confirmCancelBtn" class="px-3 py-2 md:px-4 md:py-2 bg-gray-600 hover:bg-gray-700 rounded-lg md:rounded-xl text-white text-sm md:text-base">
+                        Batal
+                    </button>
+                    <button id="confirmOkBtn" class="px-3 py-2 md:px-4 md:py-2 bg-red-600 hover:bg-red-700 rounded-lg md:rounded-xl text-white text-sm md:text-base">
+                        Hapus
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // Konfigurasi API
+            const API_BASE_URL = 'https://absen.ahoservice.my.id';
+            const API_HEADERS = {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + localStorage.getItem('admin_token')
+            };
+
+            if (!localStorage.getItem('admin_token')) {
+                window.location.href = 'login.html';
+            }
+
+            // Mobile sidebar toggle functionality
+            document.addEventListener('DOMContentLoaded', function() {
+                const mobileMenuButton = document.getElementById('mobileMenuButton');
+                const sidebar = document.getElementById('sidebar');
+                const sidebarOverlay = document.getElementById('sidebarOverlay');
+                const mainContent = document.getElementById('mainContent');
+
+                mobileMenuButton.addEventListener('click', function() {
+                    sidebar.classList.toggle('active');
+                    sidebarOverlay.classList.toggle('active');
+                });
+
+                sidebarOverlay.addEventListener('click', function() {
+                    sidebar.classList.remove('active');
+                    sidebarOverlay.classList.remove('active');
+                });
+
+                // Load initial data
+                loadStudents();
+                loadAdminProfile();
+            });
+
+            // Custom Alert Function
+            function showAlert(message, type = 'info', duration = 5000) {
+                const alertTypes = {
+                    success: { icon: 'fa-check-circle', class: 'success' },
+                    error: { icon: 'fa-exclamation-circle', class: 'error' },
+                    warning: { icon: 'fa-exclamation-triangle', class: 'warning' },
+                    info: { icon: 'fa-info-circle', class: 'info' }
+                };
+
+                const alertConfig = alertTypes[type] || alertTypes.info;
+                
+                const alertEl = document.createElement('div');
+                alertEl.className = `custom-alert ${alertConfig.class}`;
+                alertEl.innerHTML = `
+                    <i class="fas ${alertConfig.icon} icon"></i>
+                    <div class="content">${message}</div>
+                    <button class="close-btn"><i class="fas fa-times"></i></button>
+                `;
+                
+                document.body.appendChild(alertEl);
+                
+                // Force reflow to enable transition
+                void alertEl.offsetWidth;
+                
+                alertEl.classList.add('show');
+                
+                const closeBtn = alertEl.querySelector('.close-btn');
+                const closeAlert = () => {
+                    alertEl.classList.remove('show');
+                    setTimeout(() => {
+                        alertEl.remove();
+                    }, 300);
+                };
+                
+                closeBtn.addEventListener('click', closeAlert);
+                
+                if (duration > 0) {
+                    setTimeout(closeAlert, duration);
+                }
+                
+                return closeAlert;
+            }
+
+            // Custom Confirm Function
+            function showConfirm(message) {
+                return new Promise((resolve) => {
+                    const confirmModal = document.getElementById('confirmModal');
+                    const confirmMessage = document.getElementById('confirmMessage');
+                    const confirmOkBtn = document.getElementById('confirmOkBtn');
+                    const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+                    const closeConfirmModal = document.getElementById('closeConfirmModal');
+
+                    confirmMessage.textContent = message;
+                    confirmModal.classList.remove('hidden');
+
+                    const handleResponse = (result) => {
+                        confirmModal.classList.add('hidden');
+                        resolve(result);
+                        
+                        // Clean up event listeners
+                        confirmOkBtn.removeEventListener('click', okHandler);
+                        confirmCancelBtn.removeEventListener('click', cancelHandler);
+                        closeConfirmModal.removeEventListener('click', cancelHandler);
+                    };
+
+                    const okHandler = () => handleResponse(true);
+                    const cancelHandler = () => handleResponse(false);
+
+                    confirmOkBtn.addEventListener('click', okHandler);
+                    confirmCancelBtn.addEventListener('click', cancelHandler);
+                    closeConfirmModal.addEventListener('click', cancelHandler);
+                });
+            }
+
+            // Fungsi logout
+            window.logout = function() {
+                if (confirm('Apakah Anda yakin ingin logout?')) {
+                    localStorage.removeItem('admin_token');
+                    window.location.href = 'login.html';
+                }
+            };
+            
+            // Fungsi untuk memuat data profil admin
+        async function loadAdminProfile() {
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const response = await fetch(`${API_BASE_URL}/api/admin/profile`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+
+                if (response.status === 401) {
+                    localStorage.removeItem('admin_token');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error('Gagal memuat profil admin');
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Update nama admin
+                    document.getElementById('adminName').textContent = data.data.full_name;
+
+                    // Update foto profil jika ada
+                    if (data.data.photo_url) {
+                        document.getElementById('adminPhoto').src = data.data.photo_url;
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                // Tetap tampilkan UI meskipun gagal load profil
+                document.getElementById('adminName').textContent = 'Himpunan';
+            }
+        }
+
+            // Load students
+            async function loadStudents(classFilter = "Semua") {
+                try {
+                    studentsList.innerHTML = `
+                        <div class="col-span-full text-center py-8">
+                            <i class="fas fa-spinner fa-spin text-blue-500 text-2xl"></i>
+                            <p class="text-gray-400 mt-2">Memuat data...</p>
+                        </div>
+                    `;
+                    
+                    const url = new URL(`${API_BASE_URL}/students`);
+                    url.searchParams.append('kelas', classFilter);
+                    
+                    const response = await fetch(url, {
+                        headers: API_HEADERS
+                    });
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const result = await response.json();
+                    
+                    if (result.message && result.message === 'Tidak ada siswa ditemukan') {
+                        displayStudents([]);
+                        return;
+                    }
+                    
+                    console.log("Cek data siswa:", result.data || result);
+                    
+                    displayStudents(result.data || result);
+                    
+                } catch (error) {
+                    console.error("Error:", error);
+                    studentsList.innerHTML = `
+                        <div class="col-span-full text-center py-8">
+                            <i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
+                            <p class="text-gray-400 mt-2">${error.message}</p>
+                            <button onclick="loadStudents(classSelect.value)" class="mt-3 px-4 py-2 bg-blue-600 rounded-lg text-white">
+                                <i class="fas fa-sync-alt mr-2"></i>Coba Lagi
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+
+            // Display students
+            function displayStudents(students) {
+                if (!students || students.length === 0) {
+                    studentsList.innerHTML = `
+                        <div class="col-span-full text-center py-8">
+                            <div class="mx-auto w-20 h-20 bg-gray-700 rounded-full flex items-center justify-center mb-4">
+                                <i class="fas fa-user-slash text-gray-500"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-white mb-1">Tidak Ada Data Siswa</h3>
+                            <p class="text-gray-400">Tidak ditemukan siswa di kelas yang dipilih</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                studentsList.innerHTML = students.map(student => `
+                    <div class="bg-gray-700 rounded-lg md:rounded-xl p-3 md:p-4 card-hover student-card">
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center space-x-3 flex-1">
+                                <div class="w-8 h-8 md:w-10 md:h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-user text-white text-sm md:text-base"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-white font-medium text-sm md:text-base">${student.name || 'Nama tidak tersedia'}</p>
+                                    <p class="text-gray-400 text-xs md:text-sm">${student.class || 'Kelas tidak diketahui'}</p>
+                                    ${student.nis ? `<p class="text-gray-400 text-xs">NIS: ${student.nis}</p>` : ''}
+                                </div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="editStudent('${student.id}')" class="p-1 md:p-2 text-yellow-400 hover:text-yellow-300">
+                                    <i class="fas fa-edit text-sm md:text-base"></i>
+                                </button>
+                                <button onclick="deleteStudent('${student.id}', event)" class="p-1 md:p-2 text-red-400 hover:text-red-300">
+                                    <i class="fas fa-trash text-sm md:text-base"></i>
+                                </button>
+                                <button onclick="generateCard('${student.id}', event)" class="p-1 md:p-2 text-green-400 hover:text-green-300">
+    <i class="fas fa-id-card text-sm md:text-base"></i>
+</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Modal functions
+            function showModal(action, studentData = null) {
+                if (action === 'create') {
+                    modalTitle.textContent = 'Tambah Siswa Baru';
+                    studentForm.reset();
+                    document.getElementById('studentId').value = '';
+                } else {
+                    modalTitle.textContent = 'Edit Data Siswa';
+                    document.getElementById('studentId').value = studentData.id;
+                    document.getElementById('studentName').value = studentData.name;
+                    document.getElementById('studentClass').value = studentData.class;
+                    document.getElementById('studentNis').value = studentData.nis || '';
+                }
+                studentModal.classList.remove('hidden');
+            }
+
+            function hideModal() {
+                studentModal.classList.add('hidden');
+            }
+
+            async function saveStudent(data, id = null) {
+                const url = id 
+                    ? `${API_BASE_URL}/students/${id}`
+                    : `${API_BASE_URL}/students`;
+                const method = id ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method,
+                    headers: API_HEADERS,
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `HTTP ${response.status}`);
+                }
+
+                return await response.json();
+            }
+
+            // Form submission
+            studentForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const saveBtn = document.getElementById('saveBtn');
+                const originalText = saveBtn.innerHTML;
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...';
+
+                const studentData = {
+                    name: document.getElementById('studentName').value.trim(),
+                    class: document.getElementById('studentClass').value.trim(),
+                    nis: document.getElementById('studentNis').value.trim() || null
+                };
+
+                try {
+                    // Validasi
+                    if (!studentData.name || !studentData.class) {
+                        throw new Error('Nama dan kelas harus diisi');
+                    }
+
+                    const studentId = document.getElementById('studentId').value;
+                    const result = await saveStudent(studentData, studentId || null);
+                    
+                    showAlert(result.message || 'Data berhasil disimpan!', 'success');
+                    hideModal();
+                    loadStudents(classSelect.value);
+                    
+                } catch (error) {
+                    console.error("Error:", error);
+                    showAlert(`Gagal menyimpan: ${error.message}`, 'error');
+                } finally {
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = originalText;
+                }
+            });
+
+            // Global functions
+            window.editStudent = async (id) => {
+                try {
+                    if (!id) throw new Error('ID siswa tidak valid');
+                    
+                    const loading = document.createElement('div');
+                    loading.className = 'fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50';
+                    loading.innerHTML = '<i class="fas fa-spinner fa-spin text-4xl text-white"></i>';
+                    document.body.appendChild(loading);
+
+                    const response = await fetch(`${API_BASE_URL}/students/${id}`, {
+                        headers: API_HEADERS
+                    });
+
+                    document.body.removeChild(loading);
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || `Error ${response.status}`);
+                    }
+
+                    const student = await response.json();
+                    showModal('update', student);
+
+                } catch (error) {
+                    console.error("Error:", error);
+                    showAlert(`Gagal memuat data: ${error.message}`, 'error');
+                }
+            };
+
+            window.deleteStudent = async (id, event) => {
+                if (!id) return;
+
+                try {
+                    const confirmed = await showConfirm('Apakah Anda yakin ingin menghapus siswa ini?');
+                    if (!confirmed) return;
+
+                    const deleteBtn = event.target.closest('button');
+                    const originalText = deleteBtn.innerHTML;
+                    deleteBtn.disabled = true;
+                    deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menghapus...';
+
+                    const response = await fetch(`${API_BASE_URL}/students/${id}`, {
+                        method: 'DELETE',
+                        headers: API_HEADERS
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || `Error ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    showAlert(result.message || 'Siswa berhasil dihapus', 'success');
+                    loadStudents(classSelect.value);
+
+                } catch (error) {
+                    console.error("Error:", error);
+                    showAlert(`Gagal menghapus: ${error.message}`, 'error');
+                } finally {
+                    const deleteBtn = event.target.closest('button');
+                    if (deleteBtn) {
+                        deleteBtn.disabled = false;
+                        deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                    }
+                }
+            };
+            
+            window.generateCard = async (id, event) => {
+    try {
+        const btn = event.target.closest('button');
+        btn.disabled = true;
+        const original = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin text-sm md:text-base"></i>';
+
+        const response = await fetch(`${API_BASE_URL}/generate-card/${id}`, {
+            method: 'POST',
+            headers: API_HEADERS
+        });
+
+        if (!response.ok) throw new Error('Gagal generate kartu');
+
+        const data = await response.json();
+        showAlert('Kartu berhasil digenerate!', 'success');
+
+        if (data.file_url) {
+            window.open(data.file_url, '_blank');
+        }
+
+    } catch (error) {
+        showAlert(`Gagal: ${error.message}`, 'error');
+    } finally {
+        const btn = event.target.closest('button');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-id-card text-sm md:text-base"></i>';
+    }
+};
+
+            // Event listeners
+            classSelect.addEventListener('change', () => loadStudents(classSelect.value));
+            addStudentBtn.addEventListener('click', () => showModal('create'));
+            closeModal.addEventListener('click', hideModal);
+            cancelBtn.addEventListener('click', hideModal);
+        </script>
+    </div>
+</body>
+</html>

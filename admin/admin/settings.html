@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setting - Dashboard Admin AHO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { scrollbar-width: thin; scrollbar-color: #4B5563 #1F2937; }
+        *::-webkit-scrollbar { width: 6px; }
+        *::-webkit-scrollbar-track { background: #1F2937; }
+        *::-webkit-scrollbar-thumb { background: #4B5563; border-radius: 3px; }
+        .sidebar-item:hover { background: linear-gradient(90deg, #3B82F6 0%, #1D4ED8 100%); transform: translateX(4px); transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); transition: all 0.3s ease; }
+        
+        /* Mobile Sidebar Styles */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                z-index: 50;
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .mobile-menu-btn {
+                display: block;
+            }
+            .header-title {
+                font-size: 1.25rem;
+            }
+            .header-subtitle {
+                font-size: 0.75rem;
+            }
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+            .settings-card {
+                padding: 1rem;
+            }
+        }
+        
+        /* Overlay for mobile sidebar */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+        }
+        .sidebar-overlay.active {
+            display: block;
+        }
+        
+        /* Loading state for buttons */
+        .button-loading {
+            position: relative;
+            pointer-events: none;
+        }
+        .button-loading::after {
+            content: "";
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            margin: auto;
+            border: 3px solid transparent;
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: button-loading-spinner 1s ease infinite;
+        }
+        @keyframes button-loading-spinner {
+            from { transform: rotate(0turn); }
+            to { transform: rotate(1turn); }
+        }
+
+        /* Custom Alert Styles */
+        .custom-alert {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #1F2937 0%, #111827 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            border: 1px solid #374151;
+            z-index: 1000;
+            max-width: 90%;
+            width: 400px;
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .custom-alert.active {
+            display: block;
+        }
+
+        .custom-alert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #374151;
+        }
+
+        .custom-alert-title {
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: #E5E7EB;
+        }
+
+        .custom-alert-close {
+            background: none;
+            border: none;
+            color: #9CA3AF;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .custom-alert-close:hover {
+            color: #E5E7EB;
+        }
+
+        .custom-alert-body {
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+
+        .custom-alert-footer {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .custom-alert-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .custom-alert-btn-primary {
+            background-color: #3B82F6;
+            color: white;
+            border: none;
+        }
+
+        .custom-alert-btn-primary:hover {
+            background-color: #2563EB;
+        }
+
+        .alert-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .alert-overlay.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -55%);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+
+        /* Alert Types */
+        .custom-alert-success {
+            border-left: 4px solid #10B981;
+        }
+
+        .custom-alert-error {
+            border-left: 4px solid #EF4444;
+        }
+
+        .custom-alert-warning {
+            border-left: 4px solid #F59E0B;
+        }
+
+        .custom-alert-info {
+            border-left: 4px solid #3B82F6;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen">
+
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn fixed top-4 left-4 z-30 bg-gray-800 p-2 rounded-lg md:hidden" id="mobileMenuButton">
+        <i class="fas fa-bars text-white"></i>
+    </button>
+    
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <!-- Sidebar -->
+    <div class="sidebar fixed left-0 top-0 h-full w-64 bg-gray-800 border-r border-gray-700 z-40" id="sidebar">
+        <div class="p-6 border-b border-gray-700">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-blue-600 rounded-full overflow-hidden flex items-center justify-center">
+                        <img src="https://absen.ahoservice.my.id/assets/img/iconapp.png" alt="AHO Logo" class="w-full h-full object-cover">
+                    </div>
+                <div>
+                    <h1 class="text-xl font-bold text-white">AHO Admin</h1>
+                    <p class="text-sm text-gray-400">Absensi Masuk</p>
+                </div>
+            </div>
+        </div>
+        
+        <nav class="mt-6">
+            <a href="index.html" class="sidebar-item flex items-center px-6 py-3 text-gray-300 hover:text-white transition-all duration-300">
+                <i class="fas fa-tachometer-alt w-5 mr-3"></i> Dashboard
+            </a>
+            <div class="relative">
+                <div class="sidebar-item flex items-center px-6 py-3 text-gray-300 hover:text-white transition-all duration-300">
+                    <i class="fas fa-clipboard-check w-5 mr-3"></i> Kelola Absensi
+                    <i class="fas fa-chevron-down ml-auto text-xs"></i>
+                </div>
+                <div class="bg-gray-700 ml-6">
+                    <a href="attendance-in.html" class="block px-6 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-600 transition-colors duration-200">
+                        <i class="fas fa-check-circle mr-2"></i> Catatan Absensi Masuk
+                    </a>
+                    <a href="attendance-out.html" class="block px-6 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-600 transition-colors duration-200">
+                        <i class="fas fa-times-circle mr-2"></i> Catatan Absensi Tidak Masuk
+                    </a>
+                </div>
+            </div>
+            <a href="users.html" class="sidebar-item flex items-center px-6 py-3 text-gray-300 hover:text-white transition-all duration-300">
+                <i class="fas fa-users w-5 mr-3"></i> Data Pengguna
+            </a>
+            <a href="settings.html" class="sidebar-item flex items-center px-6 py-3 bg-blue-600 text-white transition-all duration-300">
+                <i class="fas fa-cog w-5 mr-3"></i> Setting
+            </a>
+        </nav>
+
+        <div class="absolute bottom-6 left-6 right-6">
+            <button onclick="logout()" class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-xl transition duration-300">
+                <i class="fas fa-sign-out-alt mr-2"></i> Logout
+            </button>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content ml-0 md:ml-64 min-h-screen bg-gray-900" id="mainContent">
+        <!-- Header -->
+        <header class="bg-gray-800 border-b border-gray-700 px-4 md:px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="ml-10 md:ml-0">
+                    <h2 class="header-title text-xl md:text-2xl font-bold text-white">Setting</h2>
+                    <p class="header-subtitle text-xs md:text-sm text-gray-400 mt-1">Pengaturan Sistem AHO</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                        <div class="text-right hidden sm:block">
+                            <p class="text-sm text-gray-400">Admin</p>
+                            <p class="font-medium text-white" id="adminName">Memuat...</p>
+                        </div>
+                        <a href="adminprofile.html" class="w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden block">
+                            <img id="adminPhoto" src="../img/iconapp.png" alt="Foto Profil Admin"
+                                class="w-full h-full object-cover">
+                        </a>
+                    </div>
+            </div>
+        </header>
+        
+        <!-- Settings Section -->
+        <div id="settingsSection" class="p-4 md:p-6 fade-in">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 settings-grid">
+                <!-- Edit Jadwal Absen -->
+                <div class="bg-gray-800 rounded-xl md:rounded-2xl border border-gray-700 p-4 md:p-6 settings-card">
+                    <h3 class="text-lg md:text-xl font-bold text-white mb-3 md:mb-4">Jadwal Absen</h3>
+                    <form id="timeSettingsForm">
+                        <div class="space-y-3 md:space-y-4">
+                            <div>
+                                <label class="block text-gray-300 mb-2 text-sm md:text-base">Waktu Mulai</label>
+                                <input type="time" id="morningStart" class="w-full px-3 py-2 md:px-4 md:py-2 bg-gray-700 border border-gray-600 rounded-lg md:rounded-xl text-white text-sm md:text-base" required>
+                            </div>
+                            <div>
+                                <label class="block text-gray-300 mb-2 text-sm md:text-base">Waktu Berakhir</label>
+                                <input type="time" id="morningEnd" class="w-full px-3 py-2 md:px-4 md:py-2 bg-gray-700 border border-gray-600 rounded-lg md:rounded-xl text-white text-sm md:text-base" required>
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg md:rounded-xl text-sm md:text-base">
+                                <span id="timeSettingsButtonText">Simpan</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Kelola Popup -->
+                <div class="bg-gray-800 rounded-xl md:rounded-2xl border border-gray-700 p-4 md:p-6 settings-card">
+                    <h3 class="text-lg md:text-xl font-bold text-white mb-3 md:mb-4">Kelola Popup</h3>
+                    <form id="uploadPosterForm" enctype="multipart/form-data">
+                        <div class="space-y-3 md:space-y-4">
+                            <div>
+                                <label class="block text-gray-300 mb-2 text-sm md:text-base">Upload Popup Baru</label>
+                                <input type="file" name="poster" class="w-full px-3 py-2 md:px-4 md:py-2 bg-gray-700 border border-gray-600 rounded-lg md:rounded-xl text-white text-sm md:text-base" accept="image/*" required>
+                            </div>
+                            <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg md:rounded-xl text-sm md:text-base">
+                                <span id="uploadPosterButtonText">Upload</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Student Filtering -->
+                <div class="bg-gray-800 rounded-xl md:rounded-2xl border border-gray-700 p-4 md:p-6 settings-card">
+                    <h3 class="text-lg md:text-xl font-bold text-white mb-3 md:mb-4">Student Filtering</h3>
+                    <div class="space-y-3 md:space-y-4">
+                        <input type="text" placeholder="Masukkan nama/ID siswa" class="w-full px-3 py-2 md:px-4 md:py-2 bg-gray-700 border border-gray-600 rounded-lg md:rounded-xl text-white text-sm md:text-base">
+                        <button class="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg md:rounded-xl text-sm md:text-base">Blokir Siswa</button>
+                    </div>
+                </div>
+
+                <!-- Leaderboard -->
+<div class="bg-gray-800 rounded-xl md:rounded-2xl border border-gray-700 p-4 md:p-6 settings-card">
+    <h3 class="text-lg md:text-xl font-bold text-white mb-3 md:mb-4">Leaderboard</h3>
+    <div class="space-y-3 md:space-y-4">
+        <div>
+            <label class="block text-gray-300 mb-2 text-sm md:text-base">Periode</label>
+            <div class="grid grid-cols-2 gap-2">
+                <input type="month" id="startMonth" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm" value="2025-07">
+                <input type="month" id="endMonth" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm" value="2025-10">
+            </div>
+        </div>
+        
+        <button id="generateLeaderboard" class="w-full bg-yellow-600 hover:bg-yellow-700 text-white py-2 rounded-lg md:rounded-xl text-sm md:text-base">
+            <span id="generateButtonText">Generate Leaderboard</span>
+        </button>
+        
+        <!-- Results Container -->
+        <div id="leaderboardResults" class="hidden mt-4 space-y-3">
+            <h4 class="text-white font-semibold">5 Siswa Terrajin:</h4>
+            <div id="topStudentsList" class="space-y-2 max-h-60 overflow-y-auto">
+                <!-- Results will be populated here -->
+            </div>
+            <button id="saveLeaderboard" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg text-sm">
+                <span id="saveButtonText">Simpan Leaderboard</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+                <!-- Maintenance -->
+                <div class="bg-gray-800 rounded-xl md:rounded-2xl border border-gray-700 p-4 md:p-6 settings-card">
+                    <h3 class="text-lg md:text-xl font-bold text-white mb-3 md:mb-4">Maintenance</h3>
+                    <div class="space-y-3 md:space-y-4">
+                        <button class="w-full bg-orange-600 hover:bg-orange-700 text-white py-2 rounded-lg md:rounded-xl text-sm md:text-base">Backup Database</button>
+                        <button class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg md:rounded-xl text-sm md:text-base">Clear Cache</button>
+                    </div>
+                </div>
+
+                <!-- Alert Messaging -->
+                <div class="bg-gray-800 rounded-xl md:rounded-2xl border border-gray-700 p-4 md:p-6 settings-card">
+                    <h3 class="text-lg md:text-xl font-bold text-white mb-3 md:mb-4">Alert Messaging</h3>
+                    <div class="space-y-3 md:space-y-4">
+                        <textarea placeholder="Tulis pesan alert..." class="w-full px-3 py-2 md:px-4 md:py-2 bg-gray-700 border border-gray-600 rounded-lg md:rounded-xl text-white text-sm md:text-base h-24"></textarea>
+                        <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg md:rounded-xl text-sm md:text-base">Kirim Alert</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Alert -->
+    <div id="alertOverlay" class="alert-overlay"></div>
+    <div id="customAlert" class="custom-alert">
+        <div class="custom-alert-header">
+            <h3 id="alertTitle" class="custom-alert-title">Notification</h3>
+            <button id="alertClose" class="custom-alert-close">&times;</button>
+        </div>
+        <div id="alertBody" class="custom-alert-body">
+            Alert message will appear here
+        </div>
+        <div class="custom-alert-footer">
+            <button id="alertConfirm" class="custom-alert-btn custom-alert-btn-primary">OK</button>
+        </div>
+    </div>
+
+    <script>
+    // Konfigurasi API
+    const API_BASE_URL = 'https://absen.ahoservice.my.id';
+    
+    function getAuthHeaders() {
+        return {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem('admin_token')
+        };
+    }
+
+    // Cek authentication
+    if (!localStorage.getItem('admin_token')) {
+        window.location.href = 'login.html';
+    }
+
+    // Alert System dengan konfirmasi
+    const customAlert = {
+        show: function(title, message, type = 'info', confirmCallback = null) {
+            const alertEl = document.getElementById('customAlert');
+            const overlayEl = document.getElementById('alertOverlay');
+            const titleEl = document.getElementById('alertTitle');
+            const bodyEl = document.getElementById('alertBody');
+            const confirmBtn = document.getElementById('alertConfirm');
+            
+            // Set content
+            titleEl.textContent = title;
+            bodyEl.textContent = message;
+            
+            // Set type (for styling)
+            alertEl.classList.remove('custom-alert-success', 'custom-alert-error', 'custom-alert-warning', 'custom-alert-info');
+            alertEl.classList.add(`custom-alert-${type}`);
+            
+            // Handle confirm button
+            const handleConfirm = function() {
+                if (confirmCallback) {
+                    confirmCallback();
+                }
+                customAlert.hide();
+                confirmBtn.removeEventListener('click', handleConfirm);
+            };
+            
+            confirmBtn.addEventListener('click', handleConfirm);
+            
+            // Show elements
+            alertEl.classList.add('active');
+            overlayEl.classList.add('active');
+        },
+        
+        hide: function() {
+            document.getElementById('customAlert').classList.remove('active');
+            document.getElementById('alertOverlay').classList.remove('active');
+        },
+        
+        init: function() {
+            document.getElementById('alertClose').addEventListener('click', this.hide);
+            document.getElementById('alertOverlay').addEventListener('click', this.hide);
+        }
+    };
+
+    // Initialize alert system
+    customAlert.init();
+
+    // Mobile sidebar toggle functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const mobileMenuButton = document.getElementById('mobileMenuButton');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+        mobileMenuButton.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
+            sidebarOverlay.classList.toggle('active');
+        });
+
+        sidebarOverlay.addEventListener('click', function() {
+            sidebar.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+        });
+        
+        // Load data when page loads
+        loadAttendanceTime();
+        loadAdminProfile();
+        setupFormListeners();
+    });
+
+    // Fungsi logout dengan konfirmasi
+    window.logout = function() {
+        customAlert.show(
+            'Konfirmasi Logout',
+            'Apakah Anda yakin ingin logout?',
+            'warning',
+            function() {
+                localStorage.removeItem('admin_token');
+                window.location.href = 'login.html';
+            }
+        );
+    };
+    
+    // Fungsi untuk memuat data profil admin
+    async function loadAdminProfile() {
+        try {
+            const token = localStorage.getItem('admin_token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const response = await fetch(`${API_BASE_URL}/api/admin/profile`, {
+                headers: getAuthHeaders()
+            });
+
+            if (response.status === 401) {
+                localStorage.removeItem('admin_token');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            if (!response.ok) {
+                throw new Error('Gagal memuat profil admin');
+            }
+
+            const data = await response.json();
+
+            if (data.success) {
+                document.getElementById('adminName').textContent = data.data.full_name;
+                if (data.data.photo_url) {
+                    document.getElementById('adminPhoto').src = data.data.photo_url;
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            document.getElementById('adminName').textContent = 'Admin';
+        }
+    }
+    
+    // Setup form listeners
+    function setupFormListeners() {
+        document.getElementById('uploadPosterForm').addEventListener('submit', handleUploadPoster);
+        document.getElementById('timeSettingsForm').addEventListener('submit', handleTimeSettings);
+        document.getElementById('generateLeaderboard').addEventListener('click', generateTopStudents);
+        document.getElementById('saveLeaderboard').addEventListener('click', saveLeaderboardToDatabase);
+    }
+    
+    // Handle upload poster
+    async function handleUploadPoster(e) {
+        e.preventDefault();
+        
+        const form = e.target;
+        const formData = new FormData(form);
+        const submitButton = form.querySelector('button[type="submit"]');
+        const buttonText = document.getElementById('uploadPosterButtonText');
+
+        try {
+            setButtonLoading(submitButton, buttonText, 'Mengupload...');
+
+            const response = await fetch(API_BASE_URL + '/api/uploadPoster', {
+                method: 'POST',
+                headers: {
+                    'Authorization': getAuthHeaders().Authorization
+                },
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || `HTTP error! Status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            customAlert.show('Success', 'Popup berhasil diupload: ' + data.message, 'success');
+            form.reset();
+        } catch (error) {
+            console.error('Error uploading poster:', error);
+            customAlert.show('Error', 'Terjadi kesalahan: ' + error.message, 'error');
+        } finally {
+            setButtonLoading(submitButton, buttonText, 'Upload', false);
+        }
+    }
+    
+    // Handle time settings
+    async function handleTimeSettings(e) {
+        e.preventDefault();
+
+        const start = document.getElementById('morningStart').value + ':00';
+        const end = document.getElementById('morningEnd').value + ':00';
+        const btn = document.querySelector('#timeSettingsForm button[type="submit"]');
+        const buttonText = document.getElementById('timeSettingsButtonText');
+        
+        try {
+            setButtonLoading(btn, buttonText, 'Menyimpan...');
+
+            const response = await fetch(API_BASE_URL + '/api/attendance-time', {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ 
+                    start_time: start, 
+                    end_time: end 
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || `HTTP error! Status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            if (result.success) {
+                customAlert.show('Success', 'Jadwal absen berhasil diperbarui!', 'success');
+            } else {
+                throw new Error(result.message || 'Gagal menyimpan jadwal');
+            }
+        } catch (error) {
+            console.error('Error saving time settings:', error);
+            customAlert.show('Error', 'Gagal menyimpan jadwal: ' + error.message, 'error');
+        } finally {
+            setButtonLoading(btn, buttonText, 'Simpan', false);
+        }
+    }
+
+    // Function to load attendance time data
+    async function loadAttendanceTime() {
+        try {
+            const response = await fetch(API_BASE_URL + '/api/attendance-time', {
+                headers: getAuthHeaders()
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            if (data.start_time && data.end_time) {
+                document.getElementById('morningStart').value = data.start_time.slice(0, 5);
+                document.getElementById('morningEnd').value = data.end_time.slice(0, 5);
+            }
+        } catch (error) {
+            console.error('Error fetching attendance time:', error);
+            document.getElementById('morningStart').value = '06:15';
+            document.getElementById('morningEnd').value = '06:40';
+        }
+    }
+    
+    // Generate top 5 students
+    async function generateTopStudents() {
+        const generateBtn = document.getElementById('generateLeaderboard');
+        const buttonText = document.getElementById('generateButtonText');
+        const startMonth = document.getElementById('startMonth').value;
+        const endMonth = document.getElementById('endMonth').value;
+
+        if (!startMonth || !endMonth) {
+            customAlert.show('Error', 'Pilih periode mulai dan akhir!', 'error');
+            return;
+        }
+
+        try {
+            setButtonLoading(generateBtn, buttonText, 'Generating...');
+
+            const response = await fetch(API_BASE_URL + '/api/leaderboard/generate', {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({
+                    start_period: startMonth,
+                    end_period: endMonth
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || `HTTP error! Status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            if (result.success && result.data && result.data.length > 0) {
+                displayTopStudents(result.data);
+                customAlert.show('Success', `Berhasil generate ${result.data.length} siswa terrajin!`, 'success');
+            } else {
+                customAlert.show('Info', 'Tidak ada data absensi pada periode tersebut', 'info');
+            }
+
+        } catch (error) {
+            console.error('Error generating leaderboard:', error);
+            customAlert.show('Error', 'Gagal generate leaderboard: ' + error.message, 'error');
+        } finally {
+            setButtonLoading(generateBtn, buttonText, 'Generate Leaderboard', false);
+        }
+    }
+    
+    let currentTopStudents = []; // Variabel global untuk menyimpan data asli
+
+// Display top students in the UI - SIMPAN DATA ASLI
+function displayTopStudents(students) {
+    const resultsContainer = document.getElementById('leaderboardResults');
+    const studentsList = document.getElementById('topStudentsList');
+    
+    studentsList.innerHTML = '';
+    
+    // SIMPAN DATA ASLI ke variabel global
+    currentTopStudents = students;
+    
+    students.forEach((student, index) => {
+        const rankColors = [
+            'bg-yellow-600', // Rank 1
+            'bg-gray-500',   // Rank 2
+            'bg-orange-600', // Rank 3
+            'bg-gray-600',   // Rank 4
+            'bg-gray-600'    // Rank 5
+        ];
+        
+        const studentElement = document.createElement('div');
+        studentElement.className = 'bg-gray-700 p-3 rounded-lg border border-gray-600 leaderboard-item';
+        studentElement.innerHTML = `
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 flex items-center justify-center ${rankColors[index]} rounded-full text-white font-bold text-sm">
+                        ${index + 1}
+                    </div>
+                    <div>
+                        <div class="text-white font-semibold">${student.name}</div>
+                        <div class="text-gray-400 text-sm">${student.class}</div>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="text-green-400 font-bold">${student.attendance_count} hadir</div>
+                    <div class="text-gray-400 text-sm">${student.attendance_rate || 0}%</div>
+                </div>
+            </div>
+        `;
+        studentsList.appendChild(studentElement);
+    });
+    
+    resultsContainer.classList.remove('hidden');
+}
+
+    // Save leaderboard to database
+    async function saveLeaderboardToDatabase() {
+    const saveBtn = document.getElementById('saveLeaderboard');
+    const buttonText = document.getElementById('saveButtonText');
+    const startMonth = document.getElementById('startMonth').value;
+    const endMonth = document.getElementById('endMonth').value;
+
+    if (currentTopStudents.length === 0) {
+        customAlert.show('Error', 'Tidak ada data leaderboard untuk disimpan! Generate terlebih dahulu.', 'error');
+        return;
+    }
+
+    const topStudents = currentTopStudents.map((student, index) => ({
+        rank: index + 1,
+        name: student.name,
+        class: student.class,
+        attendance_count: student.attendance_count,
+        attendance_rate: student.attendance_rate || 0
+    }));
+
+    console.log('Saving students data:', topStudents); // Debug log
+
+    try {
+        setButtonLoading(saveBtn, buttonText, 'Menyimpan...');
+
+        const response = await fetch(API_BASE_URL + '/api/leaderboard/save', {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+                top_students: topStudents,
+                period: `${startMonth} - ${endMonth}`
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || `HTTP error! Status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        
+        if (result.success) {
+            customAlert.show('Success', 'Leaderboard berhasil disimpan ke database!', 'success');
+            setTimeout(() => {
+                document.getElementById('leaderboardResults').classList.add('hidden');
+            }, 2000);
+        } else {
+            throw new Error(result.message || 'Gagal menyimpan leaderboard');
+        }
+
+    } catch (error) {
+        console.error('Error saving leaderboard:', error);
+        customAlert.show('Error', 'Gagal menyimpan leaderboard: ' + error.message, 'error');
+    } finally {
+        setButtonLoading(saveBtn, buttonText, 'Simpan Leaderboard', false);
+    }
+}
+
+    // Helper function untuk button loading state
+    function setButtonLoading(button, textElement, text, loading = true) {
+        if (loading) {
+            button.disabled = true;
+            textElement.textContent = text;
+            button.classList.add('button-loading');
+        } else {
+            button.disabled = false;
+            textElement.textContent = text;
+            button.classList.remove('button-loading');
+        }
+    }
+
+    // Fungsi untuk memuat riwayat leaderboard (optional)
+    async function loadLeaderboardHistory() {
+        try {
+            const response = await fetch(API_BASE_URL + '/api/leaderboard/history', {
+                headers: getAuthHeaders()
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            if (result.success) {
+                return result.data;
+            } else {
+                throw new Error(result.message || 'Gagal memuat riwayat');
+            }
+
+        } catch (error) {
+            console.error('Error loading leaderboard history:', error);
+            return [];
+        }
+    }
+</script>
+</body>
+</html>

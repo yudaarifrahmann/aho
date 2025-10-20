@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Absensi Himpunan Online</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Special+Elite&display=swap" rel="stylesheet" />
+  <link href="assets/img/logonew.png" rel="shortcut icon">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    /* Intro Animation Styles */
+    #intro-animation {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: black;
+      z-index: 1000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Arial', sans-serif;
+    }
+
+    .intro-container {
+      text-align: left;
+      color: white;
+    }
+
+    .header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .text-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .logo {
+  width: 70px;
+  height: 70px;
+  background-image: url('assets/img/iconapp.png'); 
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  border-radius: 8px;
+  opacity: 0;
+  transform: translateX(-100px) rotate(-30deg);
+  animation: brushIn 1s ease-out forwards;
+}
+
+
+    .divider {
+      width: 2px;
+      height: 70px;
+      background-color: white;
+      opacity: 0;
+      animation: fadeIn 0.5s ease-out forwards 0.8s;
+    }
+
+    .title {
+      font-size: 20px;
+      font-weight: bold;
+      opacity: 0;
+      transform: translateX(-20px);
+      animation: swipeLeft 0.8s ease-out forwards 1s;
+      text-align: left;
+    }
+
+    .subtitle {
+      font-size: 16px;
+      opacity: 0;
+      transform: translateX(20px);
+      animation: swipeRight 0.8s ease-out forwards 1.5s;
+      margin-top: 5px;
+      text-align: left;
+    }
+
+    @keyframes brushIn {
+      to {
+        opacity: 1;
+        transform: translateX(0) rotate(0);
+      }
+    }
+
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes swipeLeft {
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes swipeRight {
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    /* Main App Styles */
+    .dark {
+      background-color: #1a202c;
+      color: #cbd5e0;
+    }
+    .dark .bg-white {
+      background-color: #2d3748;
+    }
+    .dark .text-gray-700 {
+      color: #cbd5e0;
+    }
+    .dark .text-gray-500 {
+      color: #a0aec0;
+    }
+    .dark .text-purple-600 {
+      color: #d6bcfa;
+    }
+    .dark .bg-purple-400 {
+      background-color: #805ad5;
+    }
+    .dark .bg-purple-200 {
+      background-color: #b794f4;
+    }
+    .dark .bg-gradient-to-r {
+      background-image: linear-gradient(to right, #805ad5, #d6bcfa);
+    }
+    #main-app {
+      display: none;
+    }
+  </style>
+</head>
+
+<body class="bg-purple-100 font-roboto">
+  <!-- Intro Animation Page -->
+  <div id="intro-animation">
+    <div class="intro-container">
+      <div class="header">
+        <div class="logo"></div>
+        <div class="divider"></div>
+        <div class="text-container">
+          <div class="title">Absensi Himpunan Online</div>
+          <div class="subtitle">yudaYARstudio X PPLG K-One</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main App (hidden initially) -->
+  <div id="main-app">
+    <div class="max-w-md mx-auto p-4">
+      <!-- Header -->
+      <div class="bg-white rounded-lg shadow-lg p-4 text-center mb-4" style="box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);">
+        <h1 class="text-xl font-bold">Absensi Himpunan Online.</h1>
+        <p class="text-gray-500">v. 2.0</p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div class="bg-white rounded-lg shadow-lg p-4" style="box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);">
+          <p class="text-gray-700" id="greeting"></p>
+          <p class="text-purple-600 text-xl font-bold" id="current-day"></p>
+          <div class="bg-purple-400 rounded-lg p-2 mt-2">
+            <span class="text-white block" id="current-date"></span>
+            <hr class="border-white my-2" />
+            <div class="flex justify-center items-center space-x-4 mt-2">
+              <i class="fas fa-phone-alt text-white text-2xl" style="text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);" onclick="contactWhatsApp()"></i>
+              <div class="w-px h-6 bg-white"></div>
+              <i class="fas fa-moon text-white text-2xl" id="dark-mode-icon" style="text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);" onclick="toggleDarkMode()"></i>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-lg shadow-lg p-4 flex flex-col items-center" style="box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);">
+          <div class="bg-purple-400 p-2 rounded-lg w-full text-center">
+            <p class="text-white text-2xl font-bold" id="current-time" style="text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);"></p>
+            <p class="text-white mt-2">06:15 - 06:40</p>
+          </div>
+          <div class="w-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full h-2.5 mt-8"></div>
+        </div>
+      </div>
+
+      <div class="w-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full h-2.5 mb-4"></div>
+
+      <div class="bg-white rounded-lg shadow-lg p-4 mb-4 flex justify-between items-center" style="box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);">
+        <div class="flex flex-col items-center">
+          <img alt="Logo" class="w-24 h-24 mb-2" height="96" src="assets/img/logonew.png" width="96" />
+          <span class="text-sm mb-2">Absensi Himpunan Online.</span>
+        </div>
+        <div class="bg-purple-200 p-6 rounded-lg">
+          <button class="bg-purple-500 text-white rounded-full px-6 py-3 shadow-lg" onclick="showQRScanner()">LOGIN</button>
+        </div>
+      </div>
+
+      <div class="w-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full h-2.5 mb-4"></div>
+
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div class="bg-white rounded-lg shadow-lg p-4 grid grid-cols-2 gap-4 items-center" style="box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);">
+          <i class="fas fa-user-circle text-4xl"></i>
+          <i class="fas fa-th-large text-4xl"></i>
+          <i class="fas fa-home text-4xl"></i>
+          <i class="fas fa-clock text-4xl"></i>
+        </div>
+        <div class="bg-white rounded-lg shadow-lg p-4 flex justify-center items-center" style="box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);">
+          <img alt="Badge" class="w-24 h-24" height="100" src="assets/img/pplglogo.png" width="100" />
+        </div>
+      </div>
+      
+      <!-- Footer -->
+      <div class="bg-white rounded-lg shadow-lg p-4 text-center" style="box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);">
+        <p class="text-gray-500">Copyright © 2025 . YAR</p>
+      </div>
+    </div>
+  </div>
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YDKGX7SV6G"></script>
+  <script>
+    // Google Analytics
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-YDKGX7SV6G');
+
+    // Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js')
+        .then(reg => console.log('Service Worker registered!', reg))
+        .catch(err => console.log('Service Worker registration failed:', err));
+    }
+
+    // Intro Animation Functionality
+    function showMainApp() {
+      document.getElementById('intro-animation').style.display = 'none';
+      document.getElementById('main-app').style.display = 'block';
+      
+      // Initialize the main app functions
+      updateTime();
+      updateDate();
+      updateDay();
+      updateGreeting();
+      setInterval(updateTime, 1000);
+    }
+
+    setTimeout(showMainApp, 4000);
+
+    // Main App Functions
+    function updateTime() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      document.getElementById('current-time').textContent = `${hours}:${minutes}:${seconds}`;
+    }
+    
+    function updateDate() {
+      const now = new Date();
+      const day = String(now.getDate()).padStart(2, '0');
+      const month = now.toLocaleString('default', { month: 'long' });
+      const year = now.getFullYear();
+      document.getElementById('current-date').textContent = `${day} ${month} ${year}`;
+    }
+    
+    function updateDay() {
+      const now = new Date();
+      const day = now.toLocaleString('default', { weekday: 'long' });
+      document.getElementById('current-day').textContent = day;
+    }
+    
+    function updateGreeting() {
+      const now = new Date();
+      const hours = now.getHours();
+      let greeting;
+      if (hours < 12) {
+        greeting = 'Selamat Pagi!';
+      } else if (hours < 15) {
+        greeting = 'Selamat Siang!';
+      } else if (hours < 18) {
+        greeting = 'Selamat Sore!';
+      } else {
+        greeting = 'Selamat Malam!';
+      }
+      document.getElementById('greeting').textContent = greeting;
+    }
+    
+    function toggleDarkMode() {
+      const body = document.body;
+      const icon = document.getElementById('dark-mode-icon');
+      body.classList.toggle('dark');
+      if (body.classList.contains('dark')) {
+        icon.classList.remove('fa-moon');
+        icon.classList.add('fa-sun');
+      } else {
+        icon.classList.remove('fa-sun');
+        icon.classList.add('fa-moon');
+      }
+    }
+    
+    function contactWhatsApp() {
+      window.open('https://wa.me/6283119110413', '_blank');
+    }
+    
+    function showQRScanner() {
+      Swal.fire({
+        title: "Scan Kartu Absensi",
+        html: '<div id="reader" style="width: 250px; height: 250px; margin: auto;"></div>',
+        showCancelButton: false,
+        showConfirmButton: false,
+        allowOutsideClick: false,
+        didOpen: () => {
+          const scanner = new Html5Qrcode("reader");
+          scanner.start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: 250 },
+            (decodedText) => {
+              try {
+                let data = JSON.parse(decodedText);
+                if (data.name && data.class) {
+                  localStorage.setItem("userName", data.name);
+                  localStorage.setItem("userClass", data.class);
+                  scanner.stop().then(() => {
+                    Swal.close();
+                    window.location.href = "public/home.html";
+                  });
+                } else {
+                  Swal.fire("QR Code tidak valid!", "", "error");
+                }
+              } catch (error) {
+                Swal.fire("QR Code tidak valid!", "", "error");
+              }
+            },
+            (errorMessage) => {
+              console.warn(`QR Code scanning error: ${errorMessage}`);
+            }
+          );
+        }
+      });
+    }
+  </script>
+</body>
+</html>

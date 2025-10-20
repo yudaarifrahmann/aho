@@ -1,0 +1,357 @@
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Dashboard Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <link href="../img/logonew.png" rel="shortcut icon">
+    <style>
+        :root {
+            --primary: #6750A4;
+            --on-primary: #FFFFFF;
+            --primary-container: #EADDFF;
+            --on-primary-container: #21005D;
+            --secondary: #625B71;
+            --on-secondary: #FFFFFF;
+            --secondary-container: #E8DEF8;
+            --on-secondary-container: #1D192B;
+            --tertiary: #7D5260;
+            --on-tertiary: #FFFFFF;
+            --tertiary-container: #FFD8E4;
+            --on-tertiary-container: #31111D;
+            --error: #B3261E;
+            --on-error: #FFFFFF;
+            --error-container: #F9DEDC;
+            --on-error-container: #410E0B;
+            --background: #FFFBFE;
+            --on-background: #1C1B1F;
+            --surface: #FFFBFE;
+            --on-surface: #1C1B1F;
+            --surface-variant: #E7E0EC;
+            --on-surface-variant: #49454F;
+            --outline: #79747E;
+            --shadow: #000000;
+        }
+
+        .dark {
+            --primary: #D0BCFF;
+            --on-primary: #381E72;
+            --primary-container: #4F378B;
+            --on-primary-container: #EADDFF;
+            --secondary: #CCC2DC;
+            --on-secondary: #332D41;
+            --secondary-container: #4A4458;
+            --on-secondary-container: #E8DEF8;
+            --tertiary: #EFB8C8;
+            --on-tertiary: #492532;
+            --tertiary-container: #633B48;
+            --on-tertiary-container: #FFD8E4;
+            --error: #F2B8B5;
+            --on-error: #601410;
+            --error-container: #8C1D18;
+            --on-error-container: #F9DEDC;
+            --background: #1C1B1F;
+            --on-background: #E6E1E5;
+            --surface: #1C1B1F;
+            --on-surface: #E6E1E5;
+            --surface-variant: #49454F;
+            --on-surface-variant: #CAC4D0;
+            --outline: #938F99;
+            --shadow: #000000;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background);
+            color: var(--on-background);
+            transition: all 0.3s ease;
+        }
+
+        .card {
+            background-color: var(--surface);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .button {
+            background-color: var(--primary);
+            color: var(--on-primary);
+            border-radius: 20px;
+            padding: 10px 24px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.2s ease;
+        }
+
+        .button:hover {
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .button-secondary {
+            background-color: var(--secondary-container);
+            color: var(--on-secondary-container);
+        }
+
+        select, input {
+            background-color: var(--surface);
+            border: 1px solid var(--outline);
+            border-radius: 4px;
+            padding: 12px 16px;
+            color: var(--on-surface);
+        }
+
+        select:focus, input:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .sidebar {
+            background-color: var(--surface);
+            border-right: 1px solid var(--surface-variant);
+        }
+
+        .menu-item {
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            color: var(--on-surface);
+            transition: all 0.2s ease;
+        }
+
+        .menu-item:hover {
+            background-color: var(--surface-variant);
+        }
+
+        .menu-item.active {
+            background-color: var(--primary-container);
+            color: var(--on-primary-container);
+        }
+
+        .dropdown-item {
+            padding: 8px 16px 8px 32px;
+            color: var(--on-surface-variant);
+        }
+
+        .scroll-container {
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) transparent;
+        }
+
+        .scroll-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .scroll-container::-webkit-scrollbar-thumb {
+            background-color: var(--primary);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+
+<body class="dark">
+    <div class="flex">
+        <!-- Sidebar -->
+        <div class="w-96 sidebar h-screen shadow-lg">
+            <div class="flex items-center justify-between p-4 border-b border-surface-variant">
+                <div class="text-2xl font-bold" style="color: var(--on-surface)">
+                    Dashboard Admin
+                </div>
+                <button class="text-xl" id="darkModeToggle" style="color: var(--primary)">
+                    <i class="fas fa-moon dark:hidden"></i>
+                    <i class="fas fa-sun hidden dark:inline"></i>
+                </button>
+            </div>
+            <div class="p-4">
+                <ul>
+                    <li class="mb-2">
+                        <a class="menu-item flex items-center text-lg font-medium" href="dashboard.html">
+                            <i class="fas fa-tachometer-alt mr-3"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a class="menu-item active flex items-center text-lg font-medium cursor-pointer" id="rekapAbsensiToggle">
+                            <i class="fas fa-clipboard-list mr-3"></i>
+                            Rekap Absensi
+                            <i class="fas fa-chevron-down ml-auto" style="color: var(--on-surface-variant)"></i>
+                        </a>
+                        <ul class="hidden" id="rekapAbsensiDropdown">
+                            <li class="mt-1">
+                                <a class="dropdown-item flex items-center" href="absen.html">
+                                    <i class="fas fa-circle text-xs mr-2" style="color: var(--primary)"></i>
+                                    Daftar Hadir
+                                </a>
+                            </li>
+                            <li class="mt-1">
+                                <a class="dropdown-item flex items-center" href="noatt.html">
+                                    <i class="fas fa-circle text-xs mr-2" style="color: var(--primary)"></i>
+                                    Daftar Tidak Hadir
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a class="menu-item flex items-center text-lg font-medium" href="siswa.html">
+                            <i class="fas fa-users mr-3"></i>
+                            Daftar Siswa PPLG
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <!-- Main Content -->
+        <div class="flex-1 p-6">
+            <h1 class="text-2xl font-bold mb-6" style="color: var(--on-surface)">Rekap Absensi Tidak Masuk</h1>
+            <div class="card mb-6">
+                <div class="flex flex-col md:flex-row md:items-center md:space-x-4">
+                    <div class="flex-1 mb-4 md:mb-0">
+                        <label for="kelas" class="block text-sm font-medium mb-1" style="color: var(--on-surface-variant)">Pilih Kelas</label>
+                        <select id="kelas" class="w-full">
+                            <option>Semua</option>
+                            <option>X GIM</option>
+                            <option>X RPL-1</option>
+                            <option>X RPL-2</option>
+                            <option>XI GIM</option>
+                            <option>XI RPL-1</option>
+                            <option>XI RPL-2</option>
+                            <option>XII PPLG-1</option>
+                            <option>XII PPLG-2</option>
+                            <option>XII PPLG-3</option>
+                            <option>GURU</option>
+                            <option>PENGURUS HIMPUNAN</option>
+                        </select>
+                    </div>
+                    <div class="flex-1 mb-4 md:mb-0">
+                        <label for="tanggal" class="block text-sm font-medium mb-1" style="color: var(--on-surface-variant)">Tanggal</label>
+                        <div class="relative">
+                            <input type="date" id="tanggal" class="w-full">
+                        </div>
+                    </div>
+                    <div class="flex space-x-4 items-end">
+                        <button id="cariData" class="button">Cari Data</button>
+                        <button id="unduhLaporan" class="button button-secondary">Unduh Laporan</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <h2 class="text-lg font-bold mb-4" style="color: var(--on-surface)">Hasil Pencarian:</h2>
+                <div id="hasilPencarian" class="scroll-container max-h-64 overflow-y-auto p-3 rounded" style="background-color: var(--surface-variant); color: var(--on-surface-variant)">
+                    <p>Silakan pilih kelas dan tanggal untuk melihat data.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById("cariData").addEventListener("click", async () => {
+            const kelas = document.getElementById("kelas").value;
+            const tanggal = document.getElementById("tanggal").value;
+
+            if (!tanggal) {
+                const hasilPencarian = document.getElementById("hasilPencarian");
+                hasilPencarian.innerHTML = `<p style="color: var(--error)">Silakan pilih tanggal terlebih dahulu!</p>`;
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/noatt-db?kelas=${kelas}&tanggal=${tanggal}`);
+                const data = await response.json();
+
+                const hasilPencarian = document.getElementById("hasilPencarian");
+
+                if (data.message) {
+                    hasilPencarian.innerHTML = `<p style="color: var(--tertiary)">${data.message}</p>`;
+                } else {
+                    let resultHTML = `<h3 class="font-bold mb-2">Data Absensi Tanggal ${tanggal}:</h3>`; // Judul tanggal
+                    resultHTML += `<div class="scroll-container">`; // Wrapper scroll
+
+                    for (const [studentClass, students] of Object.entries(data.noAttendance)) {
+                        resultHTML += `<h4 class="font-bold mt-4">Kelas ${studentClass}</h4>`;
+                        resultHTML += '<ul class="list-disc list-inside">';
+                        students.forEach(student => {
+                            resultHTML += `<li>${student}</li>`;
+                        });
+                        resultHTML += '</ul>';
+                    }
+
+                    resultHTML += `<p class="mt-4 font-semibold">Total Siswa Tidak Hadir: ${data.totalNoAttendance}</p>`;
+                    resultHTML += `</div>`; // Tutup wrapper scroll
+                    hasilPencarian.innerHTML = resultHTML;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                const hasilPencarian = document.getElementById("hasilPencarian");
+                hasilPencarian.innerHTML = `<p style="color: var(--error)">Terjadi kesalahan saat mengambil data.</p>`;
+            }
+        });
+
+        document.getElementById("unduhLaporan").addEventListener("click", async () => {
+            const kelas = document.getElementById("kelas").value;
+            const tanggal = document.getElementById("tanggal").value;
+            const hasilPencarian = document.getElementById("hasilPencarian");
+
+            if (!tanggal || !hasilPencarian.innerHTML.trim()) {
+                alert("Silakan pilih tanggal dan pastikan ada data untuk diunduh!");
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(16);
+            doc.text("Laporan Siswa Tidak Absensi", 14, 20);
+            doc.setFontSize(12);
+            doc.text(`Tanggal: ${tanggal}`, 14, 30);
+            doc.text(`Kelas: ${kelas}`, 14, 38);
+
+            let tableData = [];
+            let no = 1;
+
+            hasilPencarian.querySelectorAll("h4, li").forEach((el) => {
+                if (el.tagName === "H4") {
+                    var currentClass = el.textContent;
+                } else if (el.tagName === "LI") {
+                    tableData.push([no++, el.textContent, currentClass]);
+                }
+            });
+
+            // Buat tabel
+            doc.autoTable({
+                startY: 45,
+                head: [["No", "Nama", "Kelas"]],
+                body: tableData,
+                styles: { fontSize: 10 },
+                headStyles: { fillColor: [52, 152, 219] },
+                alternateRowStyles: { fillColor: [240, 240, 240] },
+            });
+
+            doc.save(`Laporan_Tidak_Absensi_${tanggal}.pdf`);
+        });
+
+        const rekapAbsensiToggle = document.getElementById('rekapAbsensiToggle');
+        const rekapAbsensiDropdown = document.getElementById('rekapAbsensiDropdown');
+        const chevronIcon = rekapAbsensiToggle.querySelector('i.fas.fa-chevron-down');
+
+        rekapAbsensiToggle.addEventListener('click', () => {
+            rekapAbsensiDropdown.classList.toggle('hidden');
+            chevronIcon.classList.toggle('fa-chevron-down');
+            chevronIcon.classList.toggle('fa-chevron-up');
+        });
+
+        // Dark mode toggle functionality
+        document.getElementById('darkModeToggle').addEventListener('click', () => {
+            document.body.classList.toggle('dark');
+        });
+    </script>
+</body>
+
+</html>

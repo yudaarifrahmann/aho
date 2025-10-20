@@ -1,0 +1,59 @@
+/* Shared styles for all pages */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #4B5563 #1F2937;
+}
+*::-webkit-scrollbar {
+    width: 6px;
+}
+*::-webkit-scrollbar-track {
+    background: #1F2937;
+}
+*::-webkit-scrollbar-thumb {
+    background: #4B5563;
+    border-radius: 3px;
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.sidebar-item {
+    transition: all 0.3s ease;
+}
+.sidebar-item:hover {
+    background: linear-gradient(90deg, #3B82F6 0%, #1D4ED8 100%);
+    transform: translateX(4px);
+}
+
+.card-hover {
+    transition: all 0.3s ease;
+}
+.card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+}
+
+/* Toast animations */
+@keyframes toast-in {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes toast-out {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+}
+
+.toast-message {
+    animation: toast-in 0.3s ease-out forwards;
+}
+
+.toast-message.toast-out {
+    animation: toast-out 0.3s ease-in forwards;
+}

@@ -1,0 +1,130 @@
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>
+   Daftar Siswa PPLG
+  </title>
+  <script src="https://cdn.tailwindcss.com">
+  </script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ios: {
+              light: '#F2F2F7',
+              dark: '#1C1C1E',
+              group: {
+                light: '#F2F2F7',
+                dark: '#2C2C2E'
+              },
+              label: {
+                primary: '#000000',
+                secondary: '#3C3C4399',
+                tertiary: '#3C3C434D',
+                quaternary: '#3C3C432E'
+              },
+              fill: {
+                primary: '#78788033',
+                secondary: '#78788029',
+                tertiary: '#7676801F',
+                quaternary: '#74748014'
+              },
+              blue: '#0A84FF',
+              indigo: '#5E5CE6',
+              purple: '#BF5AF2',
+              pink: '#FF375F',
+              red: '#FF453A',
+              orange: '#FF9F0A',
+              yellow: '#FFD60A',
+              green: '#30D158',
+              mint: '#66D4CF',
+              teal: '#40C8E0',
+              cyan: '#64D2FF',
+              gray: '#8E8E93'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+  <link href="/assets/img/logonew.png" rel="shortcut icon">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600&display=swap');
+    body {
+      font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    .ios-card {
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+    }
+    .ios-pressable:active {
+      opacity: 0.7;
+      transform: scale(0.98);
+    }
+  </style>
+ </head>
+ <body class="bg-ios-light dark:bg-ios-dark text-ios-label-primary dark:text-white flex flex-col items-center justify-center min-h-screen p-4 transition-colors duration-300">
+  <div class="max-w-md w-full">
+   <div class="flex flex-col items-center mb-8">
+    <img alt="Green circular logo with white text" class="mx-auto mb-4 rounded-[28px] shadow-md" height="100" src="/assets/img/iconapp.png" width="100"/>
+    <h1 class="text-xl font-semibold text-ios-label-primary dark:text-white">
+     AHO MANAGE
+    </h1>
+   </div>
+   
+   <div class="ios-card bg-ios-group-light dark:bg-ios-group-dark rounded-2xl p-5 mb-6 shadow-sm">
+    <h2 class="text-xl font-bold mb-2 text-white dark:text-white">
+     Daftar Siswa PPLG
+    </h2>
+    <p class="text-lg mb-4 text-white dark:text-white">
+     Pilih Kelas:
+    </p>
+    
+    <div class="space-y-2">
+      <a href="students.html?kelas=X-GIM" class="ios-pressable block w-full py-3 px-4 bg-white dark:bg-ios-dark rounded-xl flex justify-between items-center hover:bg-ios-fill-tertiary dark:hover:bg-ios-fill-primary active:bg-ios-fill-secondary dark:active:bg-ios-fill-secondary transition-all duration-200">
+       <span class="font-medium">X-GIM</span>
+      </a>
+      
+      <a href="students.html?kelas=X-RPL-1" class="ios-pressable block w-full py-3 px-4 bg-white dark:bg-ios-dark rounded-xl flex justify-between items-center hover:bg-ios-fill-tertiary dark:hover:bg-ios-fill-primary active:bg-ios-fill-secondary dark:active:bg-ios-fill-secondary transition-all duration-200">
+       <span class="font-medium">X RPL-1</span>
+      </a>
+      
+      <a href="students.html?kelas=X-RPL-2" class="ios-pressable block w-full py-3 px-4 bg-white dark:bg-ios-dark rounded-xl flex justify-between items-center hover:bg-ios-fill-tertiary dark:hover:bg-ios-fill-primary active:bg-ios-fill-secondary dark:active:bg-ios-fill-secondary transition-all duration-200">
+       <span class="font-medium">X RPL-2</span>
+      </a>
+      
+      <a href="students.html?kelas=XI-GIM" class="ios-pressable block w-full py-3 px-4 bg-white dark:bg-ios-dark rounded-xl flex justify-between items-center hover:bg-ios-fill-tertiary dark:hover:bg-ios-fill-primary active:bg-ios-fill-secondary dark:active:bg-ios-fill-secondary transition-all duration-200">
+       <span class="font-medium">XI GIM</span>
+      </a>
+      
+      <a href="students.html?kelas=XI-RPL-1" class="ios-pressable block w-full py-3 px-4 bg-white dark:bg-ios-dark rounded-xl flex justify-between items-center hover:bg-ios-fill-tertiary dark:hover:bg-ios-fill-primary active:bg-ios-fill-secondary dark:active:bg-ios-fill-secondary transition-all duration-200">
+       <span class="font-medium">XI RPL-1</span>
+      </a>
+      
+      <a href="students.html?kelas=XI-RPL-2" class="ios-pressable block w-full py-3 px-4 bg-white dark:bg-ios-dark rounded-xl flex justify-between items-center hover:bg-ios-fill-tertiary dark:hover:bg-ios-fill-primary active:bg-ios-fill-secondary dark:active:bg-ios-fill-secondary transition-all duration-200">
+       <span class="font-medium">XI RPL-2</span>
+      </a>
+      
+      <a href="students.html?kelas=XII-PPLG-1" class="ios-pressable block w-full py-3 px-4 bg-white dark:bg-ios-dark rounded-xl flex justify-between items-center hover:bg-ios-fill-tertiary dark:hover:bg-ios-fill-primary active:bg-ios-fill-secondary dark:active:bg-ios-fill-secondary transition-all duration-200">
+       <span class="font-medium">XII PPLG-1</span>
+      </a>
+      
+      <a href="students.html?kelas=XII-PPLG-2" class="ios-pressable block w-full py-3 px-4 bg-white dark:bg-ios-dark rounded-xl flex justify-between items-center hover:bg-ios-fill-tertiary dark:hover:bg-ios-fill-primary active:bg-ios-fill-secondary dark:active:bg-ios-fill-secondary transition-all duration-200">
+       <span class="font-medium">XII PPLG-2</span>
+      </a>
+      
+      <a href="students.html?kelas=XII-PPLG-3" class="ios-pressable block w-full py-3 px-4 bg-white dark:bg-ios-dark rounded-xl flex justify-between items-center hover:bg-ios-fill-tertiary dark:hover:bg-ios-fill-primary active:bg-ios-fill-secondary dark:active:bg-ios-fill-secondary transition-all duration-200">
+       <span class="font-medium">XII PPLG-3</span>
+      </a>
+    </div>
+    
+    <p class="text-white text-sm italic text-right mt-4">
+  Data siswa di update pada 4 Juli 2025
+</p>
+   </div>
+  </div>
+ </body>
+</html>

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AHOBoard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/html5-qrcode/minified/html5-qrcode.min.js"></script>
+    <link href="/assets/img/logonew.png" rel="shortcut icon">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        ios: {
+                            light: '#F2F2F7',
+                            dark: '#1C1C1E',
+                            group: {
+                                light: '#F2F2F7',
+                                dark: '#2C2C2E'
+                            },
+                            label: {
+                                primary: '#000000',
+                                secondary: '#3C3C4399',
+                                tertiary: '#FFFFFF',
+                                quaternary: '#3C3C432E'
+                            },
+                            fill: {
+                                primary: '#78788033',
+                                secondary: '#78788029',
+                                tertiary: '#7676801F',
+                                quaternary: '#74748014'
+                            },
+                            blue: '#0A84FF',
+                            indigo: '#5E5CE6',
+                            purple: '#BF5AF2',
+                            pink: '#FF375F',
+                            red: '#FF453A',
+                            orange: '#FF9F0A',
+                            yellow: '#FFD60A',
+                            green: '#30D158',
+                            mint: '#66D4CF',
+                            teal: '#40C8E0',
+                            cyan: '#64D2FF',
+                            gray: '#8E8E93'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600&display=swap');
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        .ios-card {
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+        }
+        .ios-pressable:active {
+            opacity: 0.7;
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body class="bg-ios-light dark:bg-ios-dark text-ios-label-primary dark:text-white min-h-screen p-4 transition-colors duration-300">
+    <div class="max-w-md mx-auto">
+        <div class="ios-card bg-ios-group-light dark:bg-ios-group-dark rounded-2xl p-6 mb-6 shadow-sm">
+            <h1 class="text-xl font-semibold text-center text-white dark:text-white mb-6">Pilih Kelas</h1>
+            
+            <div class="space-y-3">
+                <!-- X GIM -->
+                <div onclick="redirectToDetail('X GIM')" class="ios-pressable w-full py-4 px-5 bg-white dark:bg-ios-dark rounded-xl flex justify-between items-center hover:bg-ios-fill-tertiary dark:hover:bg-ios-fill-primary active:bg-ios-fill-secondary dark:active:bg-ios-fill-secondary transition-all duration-200">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-ios-blue flex items-center justify-center mr-3">
+                            <span class="text-white font-medium">XG</span>
+                        </div>
+                        <span class="font-medium">X GIM</span>
+                    </div>
+                    <div class="flex space-x-4">
+                        <div class="text-center">
+                            <div class="text-xs text-ios-label-secondary dark:text-ios-label-tertiary">Hadir</div>
+                            <div class="text-ios-green font-semibold" id="hadir-XGIM">0</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xs text-ios-label-secondary dark:text-ios-label-tertiary">Tidak</div>
+                            <div class="text-ios-red font-semibold" id="tidakHadir-XGIM">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Repeat for other classes -->
+                <div onclick="redirectToDetail('X RPL 1')" class="ios-pressable w-full py-4 px-5 bg-white dark:bg-ios-dark rounded-xl flex justify-between items-center hover:bg-ios-fill-tertiary dark:hover:bg-ios-fill-primary active:bg-ios-fill-secondary dark:active:bg-ios-fill-secondary transition-all duration-200">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-ios-green flex items-center justify-center mr-3">
+                            <span class="text-white font-medium">X1</span>
+                        </div>
+                        <span class="font-medium">X RPL 1</span>
+                    </div>
+                    <div class="flex space-x-4">
+                        <div class="text-center">
+                            <div class="text-xs text-ios-label-secondary dark:text-ios-label-tertiary">Hadir</div>
+                            <div class="text-ios-green font-semibold" id="hadir-XRPL1">0</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xs text-ios-label-secondary dark:text-ios-label-tertiary">Tidak</div>
+                            <div class="text-ios-red font-semibold" id="tidakHadir-XRPL1">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- X RPL 2 -->
+                <div onclick="redirectToDetail('X RPL 2')" class="ios-pressable w-full py-4 px-5 bg-white dark:bg-ios-dark rounded-xl flex justify-between items-center hover:bg-ios-fill-tertiary dark:hover:bg-ios-fill-primary active:bg-ios-fill-secondary dark:active:bg-ios-fill-secondary transition-all duration-200">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-ios-indigo flex items-center justify-center mr-3">
+                            <span class="text-white font-medium">X2</span>
+                        </div>
+                        <span class="font-medium">X RPL 2</span>
+                    </div>
+                    <div class="flex space-x-4">
+                        <div class="text-center">
+                            <div class="text-xs text-ios-label-secondary dark:text-ios-label-tertiary">Hadir</div>
+                            <div class="text-ios-green font-semibold" id="hadir-XRPL2">0</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xs text-ios-label-secondary dark:text-ios-label-tertiary">Tidak</div>
+                            <div class="text-ios-red font-semibold" id="tidakHadir-XRPL2">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- XI GIM -->
+                <div onclick="redirectToDetail('XI GIM')" class="ios-pressable w-full py-4 px-5 bg-white dark:bg-ios-dark rounded-xl flex justify-between items-center hover:bg-ios-fill-tertiary dark:hover:bg-ios-fill-primary active:bg-ios-fill-secondary dark:active:bg-ios-fill-secondary transition-all duration-200">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-ios-purple flex items-center justify-center mr-3">
+                            <span class="text-white font-medium">XG</span>
+                        </div>
+                        <span class="font-medium">XI GIM</span>
+                    </div>
+                    <div class="flex space-x-4">
+                        <div class="text-center">
+                            <div class="text-xs text-ios-label-secondary dark:text-ios-label-tertiary">Hadir</div>
+                            <div class="text-ios-green font-semibold" id="hadir-XIGIM">0</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xs text-ios-label-secondary dark:text-ios-label-tertiary">Tidak</div>
+                            <div class="text-ios-red font-semibold" id="tidakHadir-XIGIM">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- XI RPL 1 -->
+                <div onclick="redirectToDetail('XI RPL 1')" class="ios-pressable w-full py-4 px-5 bg-white dark:bg-ios-dark rounded-xl flex justify-between items-center hover:bg-ios-fill-tertiary dark:hover:bg-ios-fill-primary active:bg-ios-fill-secondary dark:active:bg-ios-fill-secondary transition-all duration-200">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-ios-pink flex items-center justify-center mr-3">
+                            <span class="text-white font-medium">XI1</span>
+                        </div>
+                        <span class="font-medium">XI RPL 1</span>
+                    </div>
+                    <div class="flex space-x-4">
+                        <div class="text-center">
+                            <div class="text-xs text-ios-label-secondary dark:text-ios-label-tertiary">Hadir</div>
+                            <div class="text-ios-green font-semibold" id="hadir-XIRPL1">0</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xs text-ios-label-secondary dark:text-ios-label-tertiary">Tidak</div>
+                            <div class="text-ios-red font-semibold" id="tidakHadir-XIRPL1">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- XI RPL 2 -->
+                <div onclick="redirectToDetail('XI RPL 2')" class="ios-pressable w-full py-4 px-5 bg-white dark:bg-ios-dark rounded-xl flex justify-between items-center hover:bg-ios-fill-tertiary dark:hover:bg-ios-fill-primary active:bg-ios-fill-secondary dark:active:bg-ios-fill-secondary transition-all duration-200">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-ios-orange flex items-center justify-center mr-3">
+                            <span class="text-white font-medium">XI2</span>
+                        </div>
+                        <span class="font-medium">XI RPL 2</span>
+                    </div>
+                    <div class="flex space-x-4">
+                        <div class="text-center">
+                            <div class="text-xs text-ios-label-secondary dark:text-ios-label-tertiary">Hadir</div>
+                            <div class="text-ios-green font-semibold" id="hadir-XIRPL2">0</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xs text-ios-label-secondary dark:text-ios-label-tertiary">Tidak</div>
+                            <div class="text-ios-red font-semibold" id="tidakHadir-XIRPL2">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- XII PPLG 1 -->
+                <div onclick="redirectToDetail('XII PPLG 1')" class="ios-pressable w-full py-4 px-5 bg-white dark:bg-ios-dark rounded-xl flex justify-between items-center hover:bg-ios-fill-tertiary dark:hover:bg-ios-fill-primary active:bg-ios-fill-secondary dark:active:bg-ios-fill-secondary transition-all duration-200">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-ios-yellow flex items-center justify-center mr-3">
+                            <span class="text-white font-medium">XII1</span>
+                        </div>
+                        <span class="font-medium">XII PPLG 1</span>
+                    </div>
+                    <div class="flex space-x-4">
+                        <div class="text-center">
+                            <div class="text-xs text-ios-label-secondary dark:text-ios-label-tertiary">Hadir</div>
+                            <div class="text-ios-green font-semibold" id="hadir-XIIPPLG1">0</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xs text-ios-label-secondary dark:text-ios-label-tertiary">Tidak</div>
+                            <div class="text-ios-red font-semibold" id="tidakHadir-XIIPPLG1">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- XII PPLG 2 -->
+                <div onclick="redirectToDetail('XII PPLG 2')" class="ios-pressable w-full py-4 px-5 bg-white dark:bg-ios-dark rounded-xl flex justify-between items-center hover:bg-ios-fill-tertiary dark:hover:bg-ios-fill-primary active:bg-ios-fill-secondary dark:active:bg-ios-fill-secondary transition-all duration-200">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-ios-mint flex items-center justify-center mr-3">
+                            <span class="text-white font-medium">XII2</span>
+                        </div>
+                        <span class="font-medium">XII PPLG 2</span>
+                    </div>
+                    <div class="flex space-x-4">
+                        <div class="text-center">
+                            <div class="text-xs text-ios-label-secondary dark:text-ios-label-tertiary">Hadir</div>
+                            <div class="text-ios-green font-semibold" id="hadir-XIIPPLG2">0</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xs text-ios-label-secondary dark:text-ios-label-tertiary">Tidak</div>
+                            <div class="text-ios-red font-semibold" id="tidakHadir-XIIPPLG2">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- XII PPLG 3 -->
+                <div onclick="redirectToDetail('XII PPLG 3')" class="ios-pressable w-full py-4 px-5 bg-white dark:bg-ios-dark rounded-xl flex justify-between items-center hover:bg-ios-fill-tertiary dark:hover:bg-ios-fill-primary active:bg-ios-fill-secondary dark:active:bg-ios-fill-secondary transition-all duration-200">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-ios-teal flex items-center justify-center mr-3">
+                            <span class="text-white font-medium">XII3</span>
+                        </div>
+                        <span class="font-medium">XII PPLG 3</span>
+                    </div>
+                    <div class="flex space-x-4">
+                        <div class="text-center">
+                            <div class="text-xs text-ios-label-secondary dark:text-ios-label-tertiary">Hadir</div>
+                            <div class="text-ios-green font-semibold" id="hadir-XIIPPLG3">0</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xs text-ios-label-secondary dark:text-ios-label-tertiary">Tidak</div>
+                            <div class="text-ios-red font-semibold" id="tidakHadir-XIIPPLG3">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function redirectToDetail(kelas) {
+        let formattedKelas = kelas.replace(/\s+/g, '-');
+        window.location.href = `detail.html?kelas=${encodeURIComponent(formattedKelas)}`;
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const tanggalHariIni = new Date().toISOString().split("T")[0];
+        
+        const kelasList = [
+            "X-GIM", "X-RPL-1", "X-RPL-2",
+            "XI-GIM", "XI-RPL-1", "XI-RPL-2",
+            "XII-PPLG-1", "XII-PPLG-2", "XII-PPLG-3"
+        ];
+
+        fetch(`https://absen.ahoservice.my.id/debug/attendance-today`)
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                console.log("Data absensi hari ini:", data);
+                
+                kelasList.forEach(kelas => {
+                    const kelasData = data.data.find(item => item.class === kelas) || {
+                        hadir: 0,
+                        tidak_hadir: 0
+                    };
+                    
+                    const kelasId = kelas.replace(/-/g, '');
+                    const hadirEl = document.getElementById(`hadir-${kelasId}`);
+                    const tidakHadirEl = document.getElementById(`tidakHadir-${kelasId}`);
+                    
+                    if (hadirEl && tidakHadirEl) {
+                        hadirEl.textContent = kelasData.hadir || 0;
+                        tidakHadirEl.textContent = kelasData.tidak_hadir || 0;
+                    }
+                });
+            })
+            .catch(error => {
+                console.error("Error mengambil data:", error);
+                fallbackFetchData(kelasList, tanggalHariIni);
+            });
+    });
+
+    function fallbackFetchData(kelasList, tanggal) {
+        kelasList.forEach(kelas => {
+            fetch(`https://absen.ahoservice.my.id/attendance/${kelas}/${tanggal}`)
+                .then(response => response.json())
+                .then(data => {
+                    const kelasId = kelas.replace(/-/g, '');
+                    document.getElementById(`hadir-${kelasId}`).textContent = data.hadir || 0;
+                    document.getElementById(`tidakHadir-${kelasId}`).textContent = data.tidak_hadir || 0;
+                })
+                .catch(err => {
+                    console.error(`Error untuk kelas ${kelas}:`, err);
+                });
+        });
+    }
+    
+    setTimeout(function () {
+            location.reload();
+        }, 10000);
+    </script>
+</body>
+</html>
