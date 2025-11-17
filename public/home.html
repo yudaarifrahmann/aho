@@ -406,10 +406,58 @@
         /* Main Content Container */
         .main-content {
             padding-bottom: 100px;
-            /* Space for bottom navigation */
             width: 100%;
             max-width: 100%;
             overflow-y: auto;
+        }
+
+        .highlight-card {
+            position: relative;
+            border-radius: 12px;
+            animation: plgGlow 2s infinite alternate;
+            box-shadow: 0 0 12px rgba(255, 193, 7, 0.4);
+        }
+
+        @keyframes plgGlow {
+            0% {
+                box-shadow: 0 0 6px rgba(255, 193, 7, 0.3);
+            }
+
+            100% {
+                box-shadow: 0 0 18px rgba(255, 193, 7, 0.7);
+            }
+        }
+
+        /* Badge BARU */
+        .new-badge {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            background: linear-gradient(45deg, #ff6a00, #ffcc00);
+            color: white;
+            padding: 2px 8px;
+            font-size: 10px;
+            font-weight: bold;
+            border-radius: 6px;
+        }
+
+        /* Shine untuk teks PLGPay */
+        .shine-text {
+            background: linear-gradient(90deg, #ff9800, #ffe082, #ff9800);
+            background-size: 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shineMove 3s infinite linear;
+        }
+
+        @keyframes shineMove {
+            0% {
+                background-position: 0%;
+            }
+
+            100% {
+                background-position: 200%;
+            }
         }
     </style>
 </head>
@@ -451,16 +499,15 @@
                 </button>
             </div>
 
-            <div class="app-card flex items-center justify-between p-4" id="aho-app-promo">
+            <div class="app-card highlight-card flex items-center justify-between p-4" id="plgpay-card">
+                <span class="new-badge">BARU!</span>
+
                 <div class="flex items-center">
-                    <img alt="AHO Logo" class="h-10 w-10 mr-4 rounded-lg" height="40" src="/assets/img/plgpay.png"
-                        width="40" />
-                    <p class="font-medium text-on-surface">PLGPay</p>
+                    <img alt="PLGPay Logo" class="h-10 w-10 mr-4 rounded-lg" src="/assets/img/plgpay.png" />
+                    <p class="font-medium shine-text">PLGPay</p>
                 </div>
 
-                <a href="https://plgpay.ahoservice.my.id" class="install-btn ripple">
-                    Lihat
-                </a>
+                <a href="https://plgpay.ahoservice.my.id" class="install-btn ripple">Lihat</a>
             </div>
         </div>
 
